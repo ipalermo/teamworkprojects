@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.repository;
 
@@ -20,13 +5,13 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 
+import com.android.example.github.api.GetProjectsResponse;
 import com.android.example.github.api.GithubService;
-import com.android.example.github.api.RepoSearchResponse;
 import com.android.example.github.db.GithubDb;
 import com.android.example.github.db.RepoDao;
 import com.android.example.github.util.TestUtil;
+import com.android.example.github.vo.GetProjectsResult;
 import com.android.example.github.vo.Repo;
-import com.android.example.github.vo.RepoSearchResult;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -51,7 +36,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class FetchNextSearchPageTaskTest {
+public class FetchNextProjectsPageTaskTest {
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
@@ -62,7 +47,7 @@ public class FetchNextSearchPageTaskTest {
 
     private RepoDao repoDao;
 
-    private FetchNextSearchPageTask task;
+    private FetchNextProjectsPageTask task;
 
     private LiveData<Resource<Boolean>> value;
 
@@ -74,7 +59,7 @@ public class FetchNextSearchPageTaskTest {
         db = mock(GithubDb.class);
         repoDao = mock(RepoDao.class);
         when(db.repoDao()).thenReturn(repoDao);
-        task = new FetchNextSearchPageTask("foo", service, db);
+        task = new FetchNextProjectsPageTask(service, db);
         //noinspection unchecked
         observer = mock(Observer.class);
         task.getLiveData().observeForever(observer);
@@ -82,7 +67,7 @@ public class FetchNextSearchPageTaskTest {
 
     @Test
     public void withoutResult() {
-        when(repoDao.search("foo")).thenReturn(null);
+        when(repoDao.search()).thenReturn(null);
         task.run();
         verify(observer).onChanged(null);
         verifyNoMoreInteractions(observer);
@@ -101,12 +86,11 @@ public class FetchNextSearchPageTaskTest {
     @Test
     public void nextPageWithNull() throws IOException {
         createDbResult(1);
-        RepoSearchResponse result = new RepoSearchResponse();
-        result.setTotal(10);
+        GetProjectsResponse result = new GetProjectsResponse();
         List<Repo> repos = TestUtil.createRepos(10, "a", "b", "c");
-        result.setItems(repos);
-        Call<RepoSearchResponse> call = createCall(result, null);
-        when(service.searchRepos("foo", 1)).thenReturn(call);
+        result.setProjects(repos);
+        Call<GetProjectsResponse> call = createCall(result, null);
+        when(service.getProjects(1)).thenReturn(call);
         task.run();
         verify(repoDao).insertRepos(repos);
         verify(observer).onChanged(Resource.success(false));
@@ -115,13 +99,12 @@ public class FetchNextSearchPageTaskTest {
     @Test
     public void nextPageWithMore() throws IOException {
         createDbResult(1);
-        RepoSearchResponse result = new RepoSearchResponse();
-        result.setTotal(10);
+        GetProjectsResponse result = new GetProjectsResponse();
         List<Repo> repos = TestUtil.createRepos(10, "a", "b", "c");
-        result.setItems(repos);
+        result.setProjects(repos);
         result.setNextPage(2);
-        Call<RepoSearchResponse> call = createCall(result, 2);
-        when(service.searchRepos("foo", 1)).thenReturn(call);
+        Call<GetProjectsResponse> call = createCall(result, 2);
+        when(service.getProjects(1)).thenReturn(call);
         task.run();
         verify(repoDao).insertRepos(repos);
         verify(observer).onChanged(Resource.success(true));
@@ -130,10 +113,10 @@ public class FetchNextSearchPageTaskTest {
     @Test
     public void nextPageApiError() throws IOException {
         createDbResult(1);
-        Call<RepoSearchResponse> call = mock(Call.class);
+        Call<GetProjectsResponse> call = mock(Call.class);
         when(call.execute()).thenReturn(Response.error(400, ResponseBody.create(
                 MediaType.parse("txt"), "bar")));
-        when(service.searchRepos("foo", 1)).thenReturn(call);
+        when(service.getProjects(1)).thenReturn(call);
         task.run();
         verify(observer).onChanged(Resource.error("bar", true));
     }
@@ -141,26 +124,26 @@ public class FetchNextSearchPageTaskTest {
     @Test
     public void nextPageIOError() throws IOException {
         createDbResult(1);
-        Call<RepoSearchResponse> call = mock(Call.class);
+        Call<GetProjectsResponse> call = mock(Call.class);
         when(call.execute()).thenThrow(new IOException("bar"));
-        when(service.searchRepos("foo", 1)).thenReturn(call);
+        when(service.getProjects(1)).thenReturn(call);
         task.run();
         verify(observer).onChanged(Resource.error("bar", true));
     }
 
     private void createDbResult(Integer nextPage) {
-        RepoSearchResult result = new RepoSearchResult("foo", Collections.emptyList(),
-                0, nextPage);
-        when(repoDao.findSearchResult("foo")).thenReturn(result);
+        GetProjectsResult result = new GetProjectsResult(Collections.emptyList(),
+                nextPage);
+        when(repoDao.findSearchResult()).thenReturn(result);
     }
 
-    private Call<RepoSearchResponse> createCall(RepoSearchResponse body, Integer nextPage)
+    private Call<GetProjectsResponse> createCall(GetProjectsResponse body, Integer nextPage)
             throws IOException {
         Headers headers = nextPage == null ? null : Headers
                 .of("link",
-                        "<https://api.github.com/search/repositories?q=foo&page=" + nextPage
+                        "<https://api.github.com/getProjects/repositories?q=foo&page=" + nextPage
                                 + ">; rel=\"next\"");
-        Response<RepoSearchResponse> success = headers == null ?
+        Response<GetProjectsResponse> success = headers == null ?
                 Response.success(body) : Response.success(body, headers);
         Call call = mock(Call.class);
         when(call.execute()).thenReturn(success);

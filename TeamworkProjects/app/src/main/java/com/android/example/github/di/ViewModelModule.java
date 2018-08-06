@@ -4,7 +4,7 @@ import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 
 import com.android.example.github.ui.repo.RepoViewModel;
-import com.android.example.github.ui.search.SearchViewModel;
+import com.android.example.github.ui.search.ProjectsViewModel;
 import com.android.example.github.ui.user.UserViewModel;
 import com.android.example.github.viewmodel.GithubViewModelFactory;
 
@@ -21,8 +21,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(SearchViewModel.class)
-    abstract ViewModel bindSearchViewModel(SearchViewModel searchViewModel);
+    @ViewModelKey(ProjectsViewModel.class)
+    abstract ViewModel bindSearchViewModel(ProjectsViewModel projectsViewModel);
 
     @Binds
     @IntoMap

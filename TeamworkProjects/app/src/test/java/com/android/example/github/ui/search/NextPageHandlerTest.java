@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.ui.search;
 
@@ -41,19 +26,19 @@ public class NextPageHandlerTest {
     @Rule
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
-    private SearchViewModel.NextPageHandler pageHandler;
+    private ProjectsViewModel.NextPageHandler pageHandler;
 
     private RepoRepository repository;
 
     @Before
     public void init() {
         repository = mock(RepoRepository.class);
-        pageHandler = new SearchViewModel.NextPageHandler(repository);
+        pageHandler = new ProjectsViewModel.NextPageHandler(repository);
     }
 
     @Test
     public void constructor() {
-        SearchViewModel.LoadMoreState initial = getStatus();
+        ProjectsViewModel.LoadMoreState initial = getStatus();
         assertThat(initial, notNullValue());
         assertThat(initial.isRunning(), is(false));
         assertThat(initial.getErrorMessage(), nullValue());
@@ -62,11 +47,11 @@ public class NextPageHandlerTest {
     @Test
     public void reloadSameValue() {
         enqueueResponse("foo");
-        pageHandler.queryNextPage("foo");
-        verify(repository).searchNextPage("foo");
+        pageHandler.queryNextPage();
+        verify(repository).searchNextPage();
 
         reset(repository);
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         verifyNoMoreInteractions(repository);
     }
 
@@ -74,8 +59,8 @@ public class NextPageHandlerTest {
     public void success() {
         MutableLiveData<Resource<Boolean>> liveData = enqueueResponse("foo");
 
-        pageHandler.queryNextPage("foo");
-        verify(repository).searchNextPage("foo");
+        pageHandler.queryNextPage();
+        verify(repository).searchNextPage();
         assertThat(liveData.hasActiveObservers(), is(true));
         pageHandler.onChanged(Resource.loading(null));
         assertThat(liveData.hasActiveObservers(), is(true));
@@ -90,8 +75,8 @@ public class NextPageHandlerTest {
         // requery
         reset(repository);
         MutableLiveData<Resource<Boolean>> nextPage = enqueueResponse("foo");
-        pageHandler.queryNextPage("foo");
-        verify(repository).searchNextPage("foo");
+        pageHandler.queryNextPage();
+        verify(repository).searchNextPage();
         assertThat(nextPage.hasActiveObservers(), is(true));
 
         pageHandler.onChanged(Resource.success(false));
@@ -102,22 +87,22 @@ public class NextPageHandlerTest {
 
         // retry, no query
         reset(repository);
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         verifyNoMoreInteractions(repository);
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         verifyNoMoreInteractions(repository);
 
         // query another
         MutableLiveData<Resource<Boolean>> bar = enqueueResponse("bar");
-        pageHandler.queryNextPage("bar");
-        verify(repository).searchNextPage("bar");
+        pageHandler.queryNextPage();
+        verify(repository).searchNextPage();
         assertThat(bar.hasActiveObservers(), is(true));
     }
 
     @Test
     public void failure() {
         MutableLiveData<Resource<Boolean>> liveData = enqueueResponse("foo");
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         assertThat(liveData.hasActiveObservers(), is(true));
         pageHandler.onChanged(Resource.error("idk", false));
         assertThat(liveData.hasActiveObservers(), is(false));
@@ -129,7 +114,7 @@ public class NextPageHandlerTest {
 
         reset(repository);
         MutableLiveData<Resource<Boolean>> liveData2 = enqueueResponse("foo");
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         assertThat(liveData2.hasActiveObservers(), is(true));
         assertThat(getStatus().isRunning(), is(true));
         pageHandler.onChanged(Resource.success(false));
@@ -141,19 +126,19 @@ public class NextPageHandlerTest {
     @Test
     public void nullOnChanged() {
         MutableLiveData<Resource<Boolean>> liveData = enqueueResponse("foo");
-        pageHandler.queryNextPage("foo");
+        pageHandler.queryNextPage();
         assertThat(liveData.hasActiveObservers(), is(true));
         pageHandler.onChanged(null);
         assertThat(liveData.hasActiveObservers(), is(false));
     }
 
-    private SearchViewModel.LoadMoreState getStatus() {
+    private ProjectsViewModel.LoadMoreState getStatus() {
         return pageHandler.getLoadMoreState().getValue();
     }
 
     private MutableLiveData<Resource<Boolean>> enqueueResponse(String query) {
         MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
-        when(repository.searchNextPage(query)).thenReturn(liveData);
+        when(repository.searchNextPage()).thenReturn(liveData);
         return liveData;
     }
 }

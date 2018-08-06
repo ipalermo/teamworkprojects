@@ -48,7 +48,7 @@
             app:layout_constraintTop_toBottomOf="@+id/name" tools:text="description of the user"/>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/contributor_list"
-            app:layoutManager="LinearLayoutManager"
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginBottom="8dp"

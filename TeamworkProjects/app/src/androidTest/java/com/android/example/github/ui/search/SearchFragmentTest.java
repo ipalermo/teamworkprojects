@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.ui.search;
 
@@ -73,16 +58,16 @@ public class SearchFragmentTest {
     private FragmentBindingAdapters fragmentBindingAdapters;
     private NavigationController navigationController;
 
-    private SearchViewModel viewModel;
+    private ProjectsViewModel viewModel;
 
     private MutableLiveData<Resource<List<Repo>>> results = new MutableLiveData<>();
-    private MutableLiveData<SearchViewModel.LoadMoreState> loadMoreStatus = new MutableLiveData<>();
+    private MutableLiveData<ProjectsViewModel.LoadMoreState> loadMoreStatus = new MutableLiveData<>();
 
     @Before
     public void init() {
         EspressoTestUtil.disableProgressBarAnimations(activityRule);
         SearchFragment searchFragment = new SearchFragment();
-        viewModel = mock(SearchViewModel.class);
+        viewModel = mock(ProjectsViewModel.class);
         doReturn(loadMoreStatus).when(viewModel).getLoadMoreStatus();
         when(viewModel.getResults()).thenReturn(results);
 
@@ -146,15 +131,15 @@ public class SearchFragmentTest {
 
     @Test
     public void loadMoreProgress() {
-        loadMoreStatus.postValue(new SearchViewModel.LoadMoreState(true, null));
+        loadMoreStatus.postValue(new ProjectsViewModel.LoadMoreState(true, null));
         onView(withId(R.id.load_more_bar)).check(matches(isDisplayed()));
-        loadMoreStatus.postValue(new SearchViewModel.LoadMoreState(false, null));
+        loadMoreStatus.postValue(new ProjectsViewModel.LoadMoreState(false, null));
         onView(withId(R.id.load_more_bar)).check(matches(not(isDisplayed())));
     }
 
     @Test
     public void loadMoreProgressError() {
-        loadMoreStatus.postValue(new SearchViewModel.LoadMoreState(true, "QQ"));
+        loadMoreStatus.postValue(new ProjectsViewModel.LoadMoreState(true, "QQ"));
         onView(withText("QQ")).check(matches(
                 withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)));
     }

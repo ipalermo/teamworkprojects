@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.repository;
 
@@ -23,15 +8,15 @@ import android.support.annotation.Nullable;
 
 import com.android.example.github.AppExecutors;
 import com.android.example.github.api.ApiResponse;
+import com.android.example.github.api.GetProjectsResponse;
 import com.android.example.github.api.GithubService;
-import com.android.example.github.api.RepoSearchResponse;
 import com.android.example.github.db.GithubDb;
 import com.android.example.github.db.RepoDao;
 import com.android.example.github.util.AbsentLiveData;
 import com.android.example.github.util.RateLimiter;
 import com.android.example.github.vo.Contributor;
+import com.android.example.github.vo.GetProjectsResult;
 import com.android.example.github.vo.Repo;
-import com.android.example.github.vo.RepoSearchResult;
 import com.android.example.github.vo.Resource;
 
 import java.util.List;
@@ -169,25 +154,25 @@ public class RepoRepository {
         }.asLiveData();
     }
 
-    public LiveData<Resource<Boolean>> searchNextPage(String query) {
-        FetchNextSearchPageTask fetchNextSearchPageTask = new FetchNextSearchPageTask(
-                query, githubService, db);
-        appExecutors.networkIO().execute(fetchNextSearchPageTask);
-        return fetchNextSearchPageTask.getLiveData();
+    public LiveData<Resource<Boolean>> searchNextPage() {
+        FetchNextProjectsPageTask fetchNextProjectsPageTask = new FetchNextProjectsPageTask(
+                githubService, db);
+        appExecutors.networkIO().execute(fetchNextProjectsPageTask);
+        return fetchNextProjectsPageTask.getLiveData();
     }
 
-    public LiveData<Resource<List<Repo>>> search(String query) {
-        return new NetworkBoundResource<List<Repo>, RepoSearchResponse>(appExecutors) {
+    public LiveData<Resource<List<Repo>>> getProjects() {
+        return new NetworkBoundResource<List<Repo>, GetProjectsResponse>(appExecutors) {
 
             @Override
-            protected void saveCallResult(@NonNull RepoSearchResponse item) {
+            protected void saveCallResult(@NonNull GetProjectsResponse item) {
                 List<Integer> repoIds = item.getRepoIds();
-                RepoSearchResult repoSearchResult = new RepoSearchResult(
-                        query, repoIds, item.getTotal(), item.getNextPage());
+                GetProjectsResult getProjectsResult = new GetProjectsResult(
+                        repoIds, item.getNextPage());
                 db.beginTransaction();
                 try {
-                    repoDao.insertRepos(item.getItems());
-                    repoDao.insert(repoSearchResult);
+                    repoDao.insertRepos(item.getProjects());
+                    repoDao.insert(getProjectsResult);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
@@ -202,7 +187,7 @@ public class RepoRepository {
             @NonNull
             @Override
             protected LiveData<List<Repo>> loadFromDb() {
-                return Transformations.switchMap(repoDao.search(query), searchData -> {
+                return Transformations.switchMap(repoDao.search(), searchData -> {
                     if (searchData == null) {
                         return AbsentLiveData.create();
                     } else {
@@ -213,13 +198,13 @@ public class RepoRepository {
 
             @NonNull
             @Override
-            protected LiveData<ApiResponse<RepoSearchResponse>> createCall() {
-                return githubService.searchRepos(query);
+            protected LiveData<ApiResponse<GetProjectsResponse>> createCall() {
+                return githubService.getProjects();
             }
 
             @Override
-            protected RepoSearchResponse processResponse(ApiResponse<RepoSearchResponse> response) {
-                RepoSearchResponse body = response.body;
+            protected GetProjectsResponse processResponse(ApiResponse<GetProjectsResponse> response) {
+                GetProjectsResponse body = response.body;
                 if (body != null) {
                     body.setNextPage(response.getNextPage());
                 }

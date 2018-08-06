@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.repository;
 
@@ -22,16 +7,16 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 
 import com.android.example.github.api.ApiResponse;
+import com.android.example.github.api.GetProjectsResponse;
 import com.android.example.github.api.GithubService;
-import com.android.example.github.api.RepoSearchResponse;
 import com.android.example.github.db.GithubDb;
 import com.android.example.github.db.RepoDao;
 import com.android.example.github.util.AbsentLiveData;
 import com.android.example.github.util.InstantAppExecutors;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.vo.Contributor;
+import com.android.example.github.vo.GetProjectsResult;
 import com.android.example.github.vo.Repo;
-import com.android.example.github.vo.RepoSearchResult;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -152,9 +137,9 @@ public class RepoRepositoryTest {
 
     @Test
     public void searchNextPage_null() {
-        when(dao.findSearchResult("foo")).thenReturn(null);
+        when(dao.findSearchResult()).thenReturn(null);
         Observer<Resource<Boolean>> observer = mock(Observer.class);
-        repository.searchNextPage("foo").observeForever(observer);
+        repository.searchNextPage().observeForever(observer);
         verify(observer).onChanged(null);
     }
 
@@ -163,18 +148,18 @@ public class RepoRepositoryTest {
         List<Integer> ids = Arrays.asList(1, 2);
 
         Observer<Resource<List<Repo>>> observer = mock(Observer.class);
-        MutableLiveData<RepoSearchResult> dbSearchResult = new MutableLiveData<>();
+        MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();
         MutableLiveData<List<Repo>> repositories = new MutableLiveData<>();
 
         when(dao.search("foo")).thenReturn(dbSearchResult);
 
-        repository.search("foo").observeForever(observer);
+        repository.getProjects().observeForever(observer);
 
         verify(observer).onChanged(Resource.loading(null));
         verifyNoMoreInteractions(service);
         reset(observer);
 
-        RepoSearchResult dbResult = new RepoSearchResult("foo", ids, 2, null);
+        GetProjectsResult dbResult = new GetProjectsResult(ids, null);
         when(dao.loadOrdered(ids)).thenReturn(repositories);
 
         dbSearchResult.postValue(dbResult);
@@ -192,20 +177,20 @@ public class RepoRepositoryTest {
         Repo repo2 = TestUtil.createRepo(2, "owner", "repo 2", "desc 2");
 
         Observer<Resource<List<Repo>>> observer = mock(Observer.class);
-        MutableLiveData<RepoSearchResult> dbSearchResult = new MutableLiveData<>();
+        MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();
         MutableLiveData<List<Repo>> repositories = new MutableLiveData<>();
 
-        RepoSearchResponse apiResponse = new RepoSearchResponse();
+        GetProjectsResponse apiResponse = new GetProjectsResponse();
         List<Repo> repoList = Arrays.asList(repo1, repo2);
-        apiResponse.setItems(repoList);
+        apiResponse.setProjects(repoList);
         apiResponse.setTotal(2);
 
-        MutableLiveData<ApiResponse<RepoSearchResponse>> callLiveData = new MutableLiveData<>();
-        when(service.searchRepos("foo")).thenReturn(callLiveData);
+        MutableLiveData<ApiResponse<GetProjectsResponse>> callLiveData = new MutableLiveData<>();
+        when(service.getProjects()).thenReturn(callLiveData);
 
         when(dao.search("foo")).thenReturn(dbSearchResult);
 
-        repository.search("foo").observeForever(observer);
+        repository.getProjects().observeForever(observer);
 
         verify(observer).onChanged(Resource.loading(null));
         verifyNoMoreInteractions(service);
@@ -215,10 +200,10 @@ public class RepoRepositoryTest {
         dbSearchResult.postValue(null);
         verify(dao, never()).loadOrdered(anyObject());
 
-        verify(service).searchRepos("foo");
-        MutableLiveData<RepoSearchResult> updatedResult = new MutableLiveData<>();
+        verify(service).getProjects();
+        MutableLiveData<GetProjectsResult> updatedResult = new MutableLiveData<>();
         when(dao.search("foo")).thenReturn(updatedResult);
-        updatedResult.postValue(new RepoSearchResult("foo", ids, 2, null));
+        updatedResult.postValue(new GetProjectsResult(ids, null));
 
         callLiveData.postValue(new ApiResponse<>(Response.success(apiResponse)));
         verify(dao).insertRepos(repoList);
@@ -230,11 +215,11 @@ public class RepoRepositoryTest {
     @Test
     public void search_fromServer_error() {
         when(dao.search("foo")).thenReturn(AbsentLiveData.create());
-        MutableLiveData<ApiResponse<RepoSearchResponse>> apiResponse = new MutableLiveData<>();
-        when(service.searchRepos("foo")).thenReturn(apiResponse);
+        MutableLiveData<ApiResponse<GetProjectsResponse>> apiResponse = new MutableLiveData<>();
+        when(service.getProjects()).thenReturn(apiResponse);
 
         Observer<Resource<List<Repo>>> observer = mock(Observer.class);
-        repository.search("foo").observeForever(observer);
+        repository.getProjects().observeForever(observer);
         verify(observer).onChanged(Resource.loading(null));
 
         apiResponse.postValue(new ApiResponse<>(new Exception("idk")));

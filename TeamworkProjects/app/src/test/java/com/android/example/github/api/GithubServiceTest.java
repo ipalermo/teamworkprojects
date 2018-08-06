@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 
 package com.android.example.github.api;
 
@@ -128,19 +113,18 @@ public class GithubServiceTest {
 
     @Test
     public void search() throws IOException, InterruptedException {
-        String header = "<https://api.github.com/search/repositories?q=foo&page=2>; rel=\"next\","
-                + " <https://api.github.com/search/repositories?q=foo&page=34>; rel=\"last\"";
+        String header = "<https://api.github.com/getProjects/repositories?q=foo&page=2>; rel=\"next\","
+                + " <https://api.github.com/getProjects/repositories?q=foo&page=34>; rel=\"last\"";
         Map<String, String> headers = new HashMap<>();
         headers.put("link", header);
-        enqueueResponse("search.json", headers);
-        ApiResponse<RepoSearchResponse> response = getValue(
-                service.searchRepos("foo"));
+        enqueueResponse("projects.json", headers);
+        ApiResponse<GetProjectsResponse> response = getValue(
+                service.getProjects());
 
         assertThat(response, notNullValue());
-        assertThat(response.body.getTotal(), is(41));
-        assertThat(response.body.getItems().size(), is(30));
+        assertThat(response.body.getProjects().size(), is(30));
         assertThat(response.links.get("next"),
-                is("https://api.github.com/search/repositories?q=foo&page=2"));
+                is("https://api.github.com/getProjects/repositories?q=foo&page=2"));
         assertThat(response.getNextPage(), is(2));
     }
 
