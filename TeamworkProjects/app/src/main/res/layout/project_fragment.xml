@@ -8,8 +8,8 @@
         <import type="com.android.example.github.vo.Status"/>
         <import type="com.android.example.github.vo.Resource"/>
         <variable
-            name="repo"
-            type="com.android.example.github.vo.Repo"/>
+            name="project"
+            type="com.android.example.github.vo.Project"/>
         <variable
             name="repoResource"
             type="Resource"/>
@@ -31,8 +31,8 @@
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            app:visibleGone="@{repo != null}"
-            android:text="@{@string/repo_full_name(repo.owner.login, repo.name)}"
+            app:visibleGone="@{project != null}"
+            android:text="@{@string/repo_full_name(project.company.id, project.name)}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" tools:text="name of the user"/>
         <TextView
@@ -43,8 +43,8 @@
             android:layout_marginLeft="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            app:visibleGone="@{repo != null}"
-            android:text="@{repo.description}" app:layout_constraintStart_toStartOf="parent"
+            app:visibleGone="@{project != null}"
+            android:text="@{project.description}" app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/name" tools:text="description of the user"/>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/contributor_list"

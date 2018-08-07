@@ -6,12 +6,12 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
 
 import com.android.example.github.api.GetProjectsResponse;
-import com.android.example.github.api.GithubService;
-import com.android.example.github.db.GithubDb;
-import com.android.example.github.db.RepoDao;
+import com.android.example.github.api.TeamworkService;
+import com.android.example.github.db.ProjectDao;
+import com.android.example.github.db.TeamworkDb;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.vo.GetProjectsResult;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -36,18 +36,18 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(JUnit4.class)
-public class FetchNextProjectsPageTaskTest {
+public class ProjectsNextPageTaskTest {
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
 
-    private GithubService service;
+    private TeamworkService service;
 
-    private GithubDb db;
+    private TeamworkDb db;
 
-    private RepoDao repoDao;
+    private ProjectDao projectDao;
 
-    private FetchNextProjectsPageTask task;
+    private ProjectsNextPageTask task;
 
     private LiveData<Resource<Boolean>> value;
 
@@ -55,11 +55,11 @@ public class FetchNextProjectsPageTaskTest {
 
     @Before
     public void init() {
-        service = mock(GithubService.class);
-        db = mock(GithubDb.class);
-        repoDao = mock(RepoDao.class);
-        when(db.repoDao()).thenReturn(repoDao);
-        task = new FetchNextProjectsPageTask(service, db);
+        service = mock(TeamworkService.class);
+        db = mock(TeamworkDb.class);
+        projectDao = mock(ProjectDao.class);
+        when(db.projectDao()).thenReturn(projectDao);
+        task = new ProjectsNextPageTask(service, db);
         //noinspection unchecked
         observer = mock(Observer.class);
         task.getLiveData().observeForever(observer);
@@ -67,7 +67,7 @@ public class FetchNextProjectsPageTaskTest {
 
     @Test
     public void withoutResult() {
-        when(repoDao.search()).thenReturn(null);
+        when(projectDao.search()).thenReturn(null);
         task.run();
         verify(observer).onChanged(null);
         verifyNoMoreInteractions(observer);
@@ -87,12 +87,12 @@ public class FetchNextProjectsPageTaskTest {
     public void nextPageWithNull() throws IOException {
         createDbResult(1);
         GetProjectsResponse result = new GetProjectsResponse();
-        List<Repo> repos = TestUtil.createRepos(10, "a", "b", "c");
-        result.setProjects(repos);
+        List<Project> projects = TestUtil.createProjects(10, "a", "b", "c");
+        result.setProjects(projects);
         Call<GetProjectsResponse> call = createCall(result, null);
         when(service.getProjects(1)).thenReturn(call);
         task.run();
-        verify(repoDao).insertRepos(repos);
+        verify(projectDao).insertRepos(projects);
         verify(observer).onChanged(Resource.success(false));
     }
 
@@ -100,13 +100,13 @@ public class FetchNextProjectsPageTaskTest {
     public void nextPageWithMore() throws IOException {
         createDbResult(1);
         GetProjectsResponse result = new GetProjectsResponse();
-        List<Repo> repos = TestUtil.createRepos(10, "a", "b", "c");
-        result.setProjects(repos);
+        List<Project> projects = TestUtil.createProjects(10, "a", "b", "c");
+        result.setProjects(projects);
         result.setNextPage(2);
         Call<GetProjectsResponse> call = createCall(result, 2);
         when(service.getProjects(1)).thenReturn(call);
         task.run();
-        verify(repoDao).insertRepos(repos);
+        verify(projectDao).insertRepos(projects);
         verify(observer).onChanged(Resource.success(true));
     }
 
@@ -134,7 +134,7 @@ public class FetchNextProjectsPageTaskTest {
     private void createDbResult(Integer nextPage) {
         GetProjectsResult result = new GetProjectsResult(Collections.emptyList(),
                 nextPage);
-        when(repoDao.findSearchResult()).thenReturn(result);
+        when(projectDao.findSearchResult()).thenReturn(result);
     }
 
     private Call<GetProjectsResponse> createCall(GetProjectsResponse body, Integer nextPage)

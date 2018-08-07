@@ -18,7 +18,7 @@ import com.android.example.github.util.RecyclerViewMatcher;
 import com.android.example.github.util.TaskExecutorWithIdlingResourceRule;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.util.ViewModelUtil;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -60,13 +60,13 @@ public class SearchFragmentTest {
 
     private ProjectsViewModel viewModel;
 
-    private MutableLiveData<Resource<List<Repo>>> results = new MutableLiveData<>();
+    private MutableLiveData<Resource<List<Project>>> results = new MutableLiveData<>();
     private MutableLiveData<ProjectsViewModel.LoadMoreState> loadMoreStatus = new MutableLiveData<>();
 
     @Before
     public void init() {
         EspressoTestUtil.disableProgressBarAnimations(activityRule);
-        SearchFragment searchFragment = new SearchFragment();
+        ProjectListFragment searchFragment = new ProjectListFragment();
         viewModel = mock(ProjectsViewModel.class);
         doReturn(loadMoreStatus).when(viewModel).getLoadMoreStatus();
         when(viewModel.getResults()).thenReturn(results);
@@ -91,16 +91,16 @@ public class SearchFragmentTest {
 
     @Test
     public void loadResults() {
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
-        results.postValue(Resource.success(Arrays.asList(repo)));
+        Project project = TestUtil.createProject("foo", "bar", "desc");
+        results.postValue(Resource.success(Arrays.asList(project)));
         onView(listMatcher().atPosition(0)).check(matches(hasDescendant(withText("foo/bar"))));
         onView(withId(R.id.progress_bar)).check(matches(not(isDisplayed())));
     }
 
     @Test
     public void dataWithLoading() {
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
-        results.postValue(Resource.loading(Arrays.asList(repo)));
+        Project project = TestUtil.createProject("foo", "bar", "desc");
+        results.postValue(Resource.loading(Arrays.asList(project)));
         onView(listMatcher().atPosition(0)).check(matches(hasDescendant(withText("foo/bar"))));
         onView(withId(R.id.progress_bar)).check(matches(not(isDisplayed())));
     }
@@ -113,9 +113,9 @@ public class SearchFragmentTest {
 
     @Test
     public void loadMore() throws Throwable {
-        List<Repo> repos = TestUtil.createRepos(50, "foo", "barr", "desc");
-        results.postValue(Resource.success(repos));
-        onView(withId(R.id.repo_list)).perform(RecyclerViewActions.scrollToPosition(49));
+        List<Project> projects = TestUtil.createProjects(50, "foo", "barr", "desc");
+        results.postValue(Resource.success(projects));
+        onView(withId(R.id.project_list)).perform(RecyclerViewActions.scrollToPosition(49));
         onView(listMatcher().atPosition(49)).check(matches(isDisplayed()));
         verify(viewModel).loadNextPage();
     }
@@ -123,10 +123,10 @@ public class SearchFragmentTest {
     @Test
     public void navigateToRepo() throws Throwable {
         doNothing().when(viewModel).loadNextPage();
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
-        results.postValue(Resource.success(Arrays.asList(repo)));
+        Project project = TestUtil.createProject("foo", "bar", "desc");
+        results.postValue(Resource.success(Arrays.asList(project)));
         onView(withText("desc")).perform(click());
-        verify(navigationController).navigateToRepo("foo", "bar");
+        verify(navigationController).navigateToProject("bar");
     }
 
     @Test
@@ -146,6 +146,6 @@ public class SearchFragmentTest {
 
     @NonNull
     private RecyclerViewMatcher listMatcher() {
-        return new RecyclerViewMatcher(R.id.repo_list);
+        return new RecyclerViewMatcher(R.id.project_list);
     }
 }

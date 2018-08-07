@@ -9,14 +9,14 @@ import android.support.annotation.Nullable;
 import com.android.example.github.AppExecutors;
 import com.android.example.github.api.ApiResponse;
 import com.android.example.github.api.GetProjectsResponse;
-import com.android.example.github.api.GithubService;
-import com.android.example.github.db.GithubDb;
-import com.android.example.github.db.RepoDao;
+import com.android.example.github.api.TeamworkService;
+import com.android.example.github.db.ProjectDao;
+import com.android.example.github.db.TeamworkDb;
 import com.android.example.github.util.AbsentLiveData;
 import com.android.example.github.util.RateLimiter;
 import com.android.example.github.vo.Contributor;
 import com.android.example.github.vo.GetProjectsResult;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import java.util.List;
@@ -28,105 +28,103 @@ import javax.inject.Singleton;
 import timber.log.Timber;
 
 /**
- * Repository that handles Repo instances.
+ * Repository that handles Project instances.
  *
- * unfortunate naming :/ .
- * Repo - value object name
+ * Project - value object name
  * Repository - type of this class.
  */
 @Singleton
-public class RepoRepository {
+public class ProjectRepository {
 
-    private final GithubDb db;
+    private final TeamworkDb db;
 
-    private final RepoDao repoDao;
+    private final ProjectDao projectDao;
 
-    private final GithubService githubService;
+    private final TeamworkService teamworkService;
 
     private final AppExecutors appExecutors;
 
-    private RateLimiter<String> repoListRateLimit = new RateLimiter<>(10, TimeUnit.MINUTES);
+    private RateLimiter<String> projectListRateLimit = new RateLimiter<>(10, TimeUnit.MINUTES);
 
     @Inject
-    public RepoRepository(AppExecutors appExecutors, GithubDb db, RepoDao repoDao,
-            GithubService githubService) {
+    public ProjectRepository(AppExecutors appExecutors, TeamworkDb db, ProjectDao projectDao,
+                             TeamworkService teamworkService) {
         this.db = db;
-        this.repoDao = repoDao;
-        this.githubService = githubService;
+        this.projectDao = projectDao;
+        this.teamworkService = teamworkService;
         this.appExecutors = appExecutors;
     }
 
-    public LiveData<Resource<List<Repo>>> loadRepos(String owner) {
-        return new NetworkBoundResource<List<Repo>, List<Repo>>(appExecutors) {
+    public LiveData<Resource<List<Project>>> loadRepos(String owner) {
+        return new NetworkBoundResource<List<Project>, List<Project>>(appExecutors) {
             @Override
-            protected void saveCallResult(@NonNull List<Repo> item) {
-                repoDao.insertRepos(item);
+            protected void saveCallResult(@NonNull List<Project> item) {
+                projectDao.insertRepos(item);
             }
 
             @Override
-            protected boolean shouldFetch(@Nullable List<Repo> data) {
-                return data == null || data.isEmpty() || repoListRateLimit.shouldFetch(owner);
-            }
-
-            @NonNull
-            @Override
-            protected LiveData<List<Repo>> loadFromDb() {
-                return repoDao.loadRepositories(owner);
+            protected boolean shouldFetch(@Nullable List<Project> data) {
+                return data == null || data.isEmpty() || projectListRateLimit.shouldFetch(owner);
             }
 
             @NonNull
             @Override
-            protected LiveData<ApiResponse<List<Repo>>> createCall() {
-                return githubService.getRepos(owner);
+            protected LiveData<List<Project>> loadFromDb() {
+                return projectDao.loadRepositories();
+            }
+
+            @NonNull
+            @Override
+            protected LiveData<ApiResponse<List<Project>>> createCall() {
+                return teamworkService.getRepos(owner);
             }
 
             @Override
             protected void onFetchFailed() {
-                repoListRateLimit.reset(owner);
+                projectListRateLimit.reset(owner);
             }
         }.asLiveData();
     }
 
-    public LiveData<Resource<Repo>> loadRepo(String owner, String name) {
-        return new NetworkBoundResource<Repo, Repo>(appExecutors) {
+    public LiveData<Resource<Project>> loadProject(int id) {
+        return new NetworkBoundResource<Project, Project>(appExecutors) {
             @Override
-            protected void saveCallResult(@NonNull Repo item) {
-                repoDao.insert(item);
+            protected void saveCallResult(@NonNull Project item) {
+                projectDao.insert(item);
             }
 
             @Override
-            protected boolean shouldFetch(@Nullable Repo data) {
+            protected boolean shouldFetch(@Nullable Project data) {
                 return data == null;
             }
 
             @NonNull
             @Override
-            protected LiveData<Repo> loadFromDb() {
-                return repoDao.load(owner, name);
+            protected LiveData<Project> loadFromDb() {
+                return projectDao.load(id);
             }
 
             @NonNull
             @Override
-            protected LiveData<ApiResponse<Repo>> createCall() {
-                return githubService.getRepo(owner, name);
+            protected LiveData<ApiResponse<Project>> createCall() {
+                return teamworkService.getProject(id);
             }
         }.asLiveData();
     }
 
-    public LiveData<Resource<List<Contributor>>> loadContributors(String owner, String name) {
+    public LiveData<Resource<List<Contributor>>> loadContributors(int projectId) {
         return new NetworkBoundResource<List<Contributor>, List<Contributor>>(appExecutors) {
             @Override
             protected void saveCallResult(@NonNull List<Contributor> contributors) {
                 for (Contributor contributor : contributors) {
-                    contributor.setRepoName(name);
-                    contributor.setRepoOwner(owner);
+                    contributor.setProjectId(projectId);
                 }
                 db.beginTransaction();
                 try {
-                    repoDao.createRepoIfNotExists(new Repo(Repo.UNKNOWN_ID,
-                            name, owner + "/" + name, "",
-                            new Repo.Owner(owner, null), 0));
-                    repoDao.insertContributors(contributors);
+                    projectDao.createRepoIfNotExists(new Project(projectId,
+                            "", "",
+                            new Project.Company(null), false));
+                    projectDao.insertContributors(contributors);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
@@ -143,26 +141,26 @@ public class RepoRepository {
             @NonNull
             @Override
             protected LiveData<List<Contributor>> loadFromDb() {
-                return repoDao.loadContributors(owner, name);
+                return projectDao.loadContributors(projectId);
             }
 
             @NonNull
             @Override
             protected LiveData<ApiResponse<List<Contributor>>> createCall() {
-                return githubService.getContributors(owner, name);
+                return teamworkService.getContributors(projectId);
             }
         }.asLiveData();
     }
 
-    public LiveData<Resource<Boolean>> searchNextPage() {
-        FetchNextProjectsPageTask fetchNextProjectsPageTask = new FetchNextProjectsPageTask(
-                githubService, db);
-        appExecutors.networkIO().execute(fetchNextProjectsPageTask);
-        return fetchNextProjectsPageTask.getLiveData();
+    public LiveData<Resource<Boolean>> projectsNextPage() {
+        ProjectsNextPageTask projectsNextPageTask = new ProjectsNextPageTask(
+                teamworkService, db);
+        appExecutors.networkIO().execute(projectsNextPageTask);
+        return projectsNextPageTask.getLiveData();
     }
 
-    public LiveData<Resource<List<Repo>>> getProjects() {
-        return new NetworkBoundResource<List<Repo>, GetProjectsResponse>(appExecutors) {
+    public LiveData<Resource<List<Project>>> getProjects() {
+        return new NetworkBoundResource<List<Project>, GetProjectsResponse>(appExecutors) {
 
             @Override
             protected void saveCallResult(@NonNull GetProjectsResponse item) {
@@ -171,8 +169,8 @@ public class RepoRepository {
                         repoIds, item.getNextPage());
                 db.beginTransaction();
                 try {
-                    repoDao.insertRepos(item.getProjects());
-                    repoDao.insert(getProjectsResult);
+                    projectDao.insertRepos(item.getProjects());
+                    projectDao.insert(getProjectsResult);
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();
@@ -180,18 +178,18 @@ public class RepoRepository {
             }
 
             @Override
-            protected boolean shouldFetch(@Nullable List<Repo> data) {
-                return data == null;
+            protected boolean shouldFetch(@Nullable List<Project> data) {
+                return data == null || data.isEmpty() || projectListRateLimit.shouldFetch("projects");
             }
 
             @NonNull
             @Override
-            protected LiveData<List<Repo>> loadFromDb() {
-                return Transformations.switchMap(repoDao.search(), searchData -> {
+            protected LiveData<List<Project>> loadFromDb() {
+                return Transformations.switchMap(projectDao.search(), searchData -> {
                     if (searchData == null) {
                         return AbsentLiveData.create();
                     } else {
-                        return repoDao.loadOrdered(searchData.repoIds);
+                        return projectDao.loadOrdered(searchData.projectIds);
                     }
                 });
             }
@@ -199,7 +197,7 @@ public class RepoRepository {
             @NonNull
             @Override
             protected LiveData<ApiResponse<GetProjectsResponse>> createCall() {
-                return githubService.getProjects();
+                return teamworkService.getProjects();
             }
 
             @Override

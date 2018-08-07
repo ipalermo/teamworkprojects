@@ -12,42 +12,41 @@ import android.util.SparseIntArray;
 
 import com.android.example.github.vo.Contributor;
 import com.android.example.github.vo.GetProjectsResult;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface for database access on Repo related operations.
+ * Interface for database access on Project related operations.
  */
 @Dao
-public abstract class RepoDao {
+public abstract class ProjectDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public abstract void insert(Repo... repos);
+    public abstract void insert(Project... projects);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void insertContributors(List<Contributor> contributors);
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    public abstract void insertRepos(List<Repo> repositories);
+    public abstract void insertRepos(List<Project> repositories);
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    public abstract long createRepoIfNotExists(Repo repo);
+    public abstract long createRepoIfNotExists(Project project);
 
-    @Query("SELECT * FROM repo WHERE owner_login = :login AND name = :name")
-    public abstract LiveData<Repo> load(String login, String name);
+    @Query("SELECT * FROM Project WHERE id = :id")
+    public abstract LiveData<Project> load(int id);
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT login, avatarUrl, repoName, repoOwner, contributions FROM contributor "
-            + "WHERE repoName = :name AND repoOwner = :owner "
+    @Query("SELECT login, avatarUrl, projectId, contributions FROM contributor "
+            + "WHERE projectId = :projectId "
             + "ORDER BY contributions DESC")
-    public abstract LiveData<List<Contributor>> loadContributors(String owner, String name);
+    public abstract LiveData<List<Contributor>> loadContributors(int projectId);
 
-    @Query("SELECT * FROM Repo "
-            + "WHERE owner_login = :owner "
-            + "ORDER BY stars DESC")
-    public abstract LiveData<List<Repo>> loadRepositories(String owner);
+    @Query("SELECT * FROM Project "
+            + "ORDER BY name DESC")
+    public abstract LiveData<List<Project>> loadRepositories();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void insert(GetProjectsResult result);
@@ -55,7 +54,7 @@ public abstract class RepoDao {
     @Query("SELECT * FROM GetProjectsResult")
     public abstract LiveData<GetProjectsResult> search();
 
-    public LiveData<List<Repo>> loadOrdered(List<Integer> repoIds) {
+    public LiveData<List<Project>> loadOrdered(List<Integer> repoIds) {
         SparseIntArray order = new SparseIntArray();
         int index = 0;
         for (Integer repoId : repoIds) {
@@ -71,8 +70,8 @@ public abstract class RepoDao {
         });
     }
 
-    @Query("SELECT * FROM Repo WHERE id in (:repoIds)")
-    protected abstract LiveData<List<Repo>> loadById(List<Integer> repoIds);
+    @Query("SELECT * FROM Project WHERE id in (:repoIds)")
+    protected abstract LiveData<List<Project>> loadById(List<Integer> repoIds);
 
     @Query("SELECT * FROM GetProjectsResult")
     public abstract GetProjectsResult findSearchResult();

@@ -17,15 +17,15 @@ import android.view.ViewGroup;
 
 import com.android.example.github.R;
 import com.android.example.github.binding.FragmentDataBindingComponent;
-import com.android.example.github.databinding.SearchFragmentBinding;
+import com.android.example.github.databinding.ProjectsListFragmentBinding;
 import com.android.example.github.di.Injectable;
 import com.android.example.github.ui.common.NavigationController;
-import com.android.example.github.ui.common.RepoListAdapter;
+import com.android.example.github.ui.common.ProjectListAdapter;
 import com.android.example.github.util.AutoClearedValue;
 
 import javax.inject.Inject;
 
-public class SearchFragment extends Fragment implements Injectable {
+public class ProjectListFragment extends Fragment implements Injectable {
 
     @Inject
     ViewModelProvider.Factory viewModelFactory;
@@ -35,9 +35,9 @@ public class SearchFragment extends Fragment implements Injectable {
 
     DataBindingComponent dataBindingComponent = new FragmentDataBindingComponent(this);
 
-    AutoClearedValue<SearchFragmentBinding> binding;
+    AutoClearedValue<ProjectsListFragmentBinding> binding;
 
-    AutoClearedValue<RepoListAdapter> adapter;
+    AutoClearedValue<ProjectListAdapter> adapter;
 
     private ProjectsViewModel projectsViewModel;
 
@@ -45,8 +45,8 @@ public class SearchFragment extends Fragment implements Injectable {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-        SearchFragmentBinding dataBinding = DataBindingUtil
-                .inflate(inflater, R.layout.search_fragment, container, false,
+        ProjectsListFragmentBinding dataBinding = DataBindingUtil
+                .inflate(inflater, R.layout.projects_list_fragment, container, false,
                         dataBindingComponent);
         binding = new AutoClearedValue<>(this, dataBinding);
         return dataBinding.getRoot();
@@ -57,9 +57,9 @@ public class SearchFragment extends Fragment implements Injectable {
         super.onActivityCreated(savedInstanceState);
         projectsViewModel = ViewModelProviders.of(this, viewModelFactory).get(ProjectsViewModel.class);
         initRecyclerView();
-        RepoListAdapter rvAdapter = new RepoListAdapter(dataBindingComponent, true,
-                repo -> navigationController.navigateToRepo(repo.owner.login, repo.name));
-        binding.get().repoList.setAdapter(rvAdapter);
+        ProjectListAdapter rvAdapter = new ProjectListAdapter(dataBindingComponent,
+                project -> navigationController.navigateToProject(project.id));
+        binding.get().projectList.setAdapter(rvAdapter);
         adapter = new AutoClearedValue<>(this, rvAdapter);
 
         binding.get().setCallback(() -> projectsViewModel.loadProjects());
@@ -67,7 +67,7 @@ public class SearchFragment extends Fragment implements Injectable {
 
     private void initRecyclerView() {
 
-        binding.get().repoList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        binding.get().projectList.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 LinearLayoutManager layoutManager = (LinearLayoutManager)

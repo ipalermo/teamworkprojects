@@ -4,7 +4,7 @@ package com.android.example.github.ui.search;
 import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.MutableLiveData;
 
-import com.android.example.github.repository.RepoRepository;
+import com.android.example.github.repository.ProjectRepository;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -28,11 +28,11 @@ public class NextPageHandlerTest {
 
     private ProjectsViewModel.NextPageHandler pageHandler;
 
-    private RepoRepository repository;
+    private ProjectRepository repository;
 
     @Before
     public void init() {
-        repository = mock(RepoRepository.class);
+        repository = mock(ProjectRepository.class);
         pageHandler = new ProjectsViewModel.NextPageHandler(repository);
     }
 
@@ -48,7 +48,7 @@ public class NextPageHandlerTest {
     public void reloadSameValue() {
         enqueueResponse("foo");
         pageHandler.queryNextPage();
-        verify(repository).searchNextPage();
+        verify(repository).projectsNextPage();
 
         reset(repository);
         pageHandler.queryNextPage();
@@ -60,7 +60,7 @@ public class NextPageHandlerTest {
         MutableLiveData<Resource<Boolean>> liveData = enqueueResponse("foo");
 
         pageHandler.queryNextPage();
-        verify(repository).searchNextPage();
+        verify(repository).projectsNextPage();
         assertThat(liveData.hasActiveObservers(), is(true));
         pageHandler.onChanged(Resource.loading(null));
         assertThat(liveData.hasActiveObservers(), is(true));
@@ -76,7 +76,7 @@ public class NextPageHandlerTest {
         reset(repository);
         MutableLiveData<Resource<Boolean>> nextPage = enqueueResponse("foo");
         pageHandler.queryNextPage();
-        verify(repository).searchNextPage();
+        verify(repository).projectsNextPage();
         assertThat(nextPage.hasActiveObservers(), is(true));
 
         pageHandler.onChanged(Resource.success(false));
@@ -95,7 +95,7 @@ public class NextPageHandlerTest {
         // query another
         MutableLiveData<Resource<Boolean>> bar = enqueueResponse("bar");
         pageHandler.queryNextPage();
-        verify(repository).searchNextPage();
+        verify(repository).projectsNextPage();
         assertThat(bar.hasActiveObservers(), is(true));
     }
 
@@ -138,7 +138,7 @@ public class NextPageHandlerTest {
 
     private MutableLiveData<Resource<Boolean>> enqueueResponse(String query) {
         MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
-        when(repository.searchNextPage()).thenReturn(liveData);
+        when(repository.projectsNextPage()).thenReturn(liveData);
         return liveData;
     }
 }

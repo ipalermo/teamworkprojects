@@ -18,7 +18,7 @@ import com.android.example.github.binding.FragmentDataBindingComponent;
 import com.android.example.github.databinding.UserFragmentBinding;
 import com.android.example.github.di.Injectable;
 import com.android.example.github.ui.common.NavigationController;
-import com.android.example.github.ui.common.RepoListAdapter;
+import com.android.example.github.ui.common.ProjectListAdapter;
 import com.android.example.github.util.AutoClearedValue;
 
 import javax.inject.Inject;
@@ -34,7 +34,7 @@ public class UserFragment extends Fragment implements Injectable {
     private UserViewModel userViewModel;
     @VisibleForTesting
     AutoClearedValue<UserFragmentBinding> binding;
-    private AutoClearedValue<RepoListAdapter> adapter;
+    private AutoClearedValue<ProjectListAdapter> adapter;
 
     public static UserFragment create(String login) {
         UserFragment userFragment = new UserFragment();
@@ -66,9 +66,9 @@ public class UserFragment extends Fragment implements Injectable {
             // this is only necessary because espresso cannot read data binding callbacks.
             binding.get().executePendingBindings();
         });
-        RepoListAdapter rvAdapter = new RepoListAdapter(dataBindingComponent, false,
-                repo -> navigationController.navigateToRepo(repo.owner.login, repo.name));
-        binding.get().repoList.setAdapter(rvAdapter);
+        ProjectListAdapter rvAdapter = new ProjectListAdapter(dataBindingComponent,
+                project -> navigationController.navigateToProject(project.id));
+        binding.get().projectList.setAdapter(rvAdapter);
         this.adapter = new AutoClearedValue<>(this, rvAdapter);
         initRepoList();
     }

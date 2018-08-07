@@ -5,8 +5,8 @@ import android.support.v4.app.FragmentManager;
 
 import com.android.example.github.MainActivity;
 import com.android.example.github.R;
-import com.android.example.github.ui.repo.RepoFragment;
-import com.android.example.github.ui.search.SearchFragment;
+import com.android.example.github.ui.repo.ProjectFragment;
+import com.android.example.github.ui.search.ProjectListFragment;
 import com.android.example.github.ui.user.UserFragment;
 
 import javax.inject.Inject;
@@ -23,16 +23,16 @@ public class NavigationController {
         this.fragmentManager = mainActivity.getSupportFragmentManager();
     }
 
-    public void navigateToSearch() {
-        SearchFragment searchFragment = new SearchFragment();
+    public void navigateToProjectsList() {
+        ProjectListFragment searchFragment = new ProjectListFragment();
         fragmentManager.beginTransaction()
                 .replace(containerId, searchFragment)
                 .commitAllowingStateLoss();
     }
 
-    public void navigateToRepo(String owner, String name) {
-        RepoFragment fragment = RepoFragment.create(owner, name);
-        String tag = "repo" + "/" + owner + "/" + name;
+    public void navigateToProject(int id) {
+        ProjectFragment fragment = ProjectFragment.create(id);
+        String tag = "project" + "/" + id;
         fragmentManager.beginTransaction()
                 .replace(containerId, fragment, tag)
                 .addToBackStack(null)

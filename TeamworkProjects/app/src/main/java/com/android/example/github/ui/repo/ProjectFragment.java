@@ -15,11 +15,11 @@ import android.view.ViewGroup;
 
 import com.android.example.github.R;
 import com.android.example.github.binding.FragmentDataBindingComponent;
-import com.android.example.github.databinding.RepoFragmentBinding;
+import com.android.example.github.databinding.ProjectFragmentBinding;
 import com.android.example.github.di.Injectable;
 import com.android.example.github.ui.common.NavigationController;
 import com.android.example.github.util.AutoClearedValue;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import java.util.Collections;
@@ -27,41 +27,37 @@ import java.util.Collections;
 import javax.inject.Inject;
 
 /**
- * The UI Controller for displaying a Github Repo's information with its contributors.
+ * The UI Controller for displaying a Project's information with its contributors.
  */
-public class RepoFragment extends Fragment implements Injectable {
+public class ProjectFragment extends Fragment implements Injectable {
 
-    private static final String REPO_OWNER_KEY = "repo_owner";
-
-    private static final String REPO_NAME_KEY = "repo_name";
+    private static final String PROJECT_ID = "project_id";
 
     @Inject
     ViewModelProvider.Factory viewModelFactory;
 
-    private RepoViewModel repoViewModel;
+    private ProjectViewModel projectViewModel;
 
     @Inject
     NavigationController navigationController;
 
     DataBindingComponent dataBindingComponent = new FragmentDataBindingComponent(this);
-    AutoClearedValue<RepoFragmentBinding> binding;
+    AutoClearedValue<ProjectFragmentBinding> binding;
     AutoClearedValue<ContributorAdapter> adapter;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        repoViewModel = ViewModelProviders.of(this, viewModelFactory).get(RepoViewModel.class);
+        projectViewModel = ViewModelProviders.of(this, viewModelFactory).get(ProjectViewModel.class);
         Bundle args = getArguments();
-        if (args != null && args.containsKey(REPO_OWNER_KEY) &&
-                args.containsKey(REPO_NAME_KEY)) {
-            repoViewModel.setId(args.getString(REPO_OWNER_KEY),
-                    args.getString(REPO_NAME_KEY));
+        if (args != null && args.containsKey(PROJECT_ID)) {
+            projectViewModel.setId(args.getInt(PROJECT_ID));
         } else {
-            repoViewModel.setId(null, null);
+            projectViewModel.setId(null);
         }
-        LiveData<Resource<Repo>> repo = repoViewModel.getRepo();
+        LiveData<Resource<Project>> repo = projectViewModel.getProject();
         repo.observe(this, resource -> {
-            binding.get().setRepo(resource == null ? null : resource.data);
+            binding.get().setProject(resource == null ? null : resource.data);
             binding.get().setRepoResource(resource);
             binding.get().executePendingBindings();
         });
@@ -70,10 +66,10 @@ public class RepoFragment extends Fragment implements Injectable {
                 contributor -> navigationController.navigateToUser(contributor.getLogin()));
         this.adapter = new AutoClearedValue<>(this, adapter);
         binding.get().contributorList.setAdapter(adapter);
-        initContributorList(repoViewModel);
+        initContributorList(projectViewModel);
     }
 
-    private void initContributorList(RepoViewModel viewModel) {
+    private void initContributorList(ProjectViewModel viewModel) {
         viewModel.getContributors().observe(this, listResource -> {
             // we don't need any null checks here for the adapter since LiveData guarantees that
             // it won't call us if fragment is stopped or not started.
@@ -90,19 +86,18 @@ public class RepoFragment extends Fragment implements Injectable {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-        RepoFragmentBinding dataBinding = DataBindingUtil
-                .inflate(inflater, R.layout.repo_fragment, container, false);
-        dataBinding.setRetryCallback(() -> repoViewModel.retry());
+        ProjectFragmentBinding dataBinding = DataBindingUtil
+                .inflate(inflater, R.layout.project_fragment, container, false);
+        dataBinding.setRetryCallback(() -> projectViewModel.retry());
         binding = new AutoClearedValue<>(this, dataBinding);
         return dataBinding.getRoot();
     }
 
-    public static RepoFragment create(String owner, String name) {
-        RepoFragment repoFragment = new RepoFragment();
+    public static ProjectFragment create(int id) {
+        ProjectFragment projectFragment = new ProjectFragment();
         Bundle args = new Bundle();
-        args.putString(REPO_OWNER_KEY, owner);
-        args.putString(REPO_NAME_KEY, name);
-        repoFragment.setArguments(args);
-        return repoFragment;
+        args.putInt(PROJECT_ID, id);
+        projectFragment.setArguments(args);
+        return projectFragment;
     }
 }

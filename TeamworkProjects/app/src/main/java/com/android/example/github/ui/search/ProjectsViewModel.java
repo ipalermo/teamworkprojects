@@ -8,8 +8,8 @@ import android.arch.lifecycle.ViewModel;
 import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 
-import com.android.example.github.repository.RepoRepository;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.repository.ProjectRepository;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import java.util.List;
@@ -18,21 +18,21 @@ import javax.inject.Inject;
 
 public class ProjectsViewModel extends ViewModel {
 
-    private LiveData<Resource<List<Repo>>> results;
+    private LiveData<Resource<List<Project>>> results;
 
     private final NextPageHandler nextPageHandler;
 
-    private RepoRepository projectsRepository;
+    private ProjectRepository projectsRepository;
 
     @Inject
-    ProjectsViewModel(RepoRepository repoRepository) {
-        nextPageHandler = new NextPageHandler(repoRepository);
-        this.projectsRepository = repoRepository;
+    ProjectsViewModel(ProjectRepository projectRepository) {
+        nextPageHandler = new NextPageHandler(projectRepository);
+        this.projectsRepository = projectRepository;
         loadProjects();
     }
 
     @VisibleForTesting
-    public LiveData<Resource<List<Repo>>> getResults() {
+    public LiveData<Resource<List<Project>>> getResults() {
         return results;
     }
 
@@ -83,19 +83,19 @@ public class ProjectsViewModel extends ViewModel {
         private LiveData<Resource<Boolean>> nextPageLiveData;
         private final MutableLiveData<LoadMoreState> loadMoreState = new MutableLiveData<>();
         private String query;
-        private final RepoRepository repository;
+        private final ProjectRepository repository;
         @VisibleForTesting
         boolean hasMore;
 
         @VisibleForTesting
-        NextPageHandler(RepoRepository repository) {
+        NextPageHandler(ProjectRepository repository) {
             this.repository = repository;
             reset();
         }
 
         void queryNextPage() {
             unregister();
-            nextPageLiveData = repository.searchNextPage();
+            nextPageLiveData = repository.projectsNextPage();
             loadMoreState.setValue(new LoadMoreState(true, null));
             //noinspection ConstantConditions
             nextPageLiveData.observeForever(this);

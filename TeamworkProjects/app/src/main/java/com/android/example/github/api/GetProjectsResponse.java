@@ -2,7 +2,7 @@ package com.android.example.github.api;
 
 import android.support.annotation.NonNull;
 
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -10,14 +10,14 @@ import java.util.List;
 
 public class GetProjectsResponse {
     @SerializedName("projects")
-    private List<Repo> projects;
+    private List<Project> projects;
     private Integer nextPage;
 
-    public List<Repo> getProjects() {
+    public List<Project> getProjects() {
         return projects;
     }
 
-    public void setProjects(List<Repo> projects) {
+    public void setProjects(List<Project> projects) {
         this.projects = projects;
     }
 
@@ -32,8 +32,8 @@ public class GetProjectsResponse {
     @NonNull
     public List<Integer> getRepoIds() {
         List<Integer> repoIds = new ArrayList<>();
-        for (Repo repo : projects) {
-            repoIds.add(repo.id);
+        for (Project project : projects) {
+            repoIds.add(project.id);
         }
         return repoIds;
     }

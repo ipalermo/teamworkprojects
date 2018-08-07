@@ -4,9 +4,9 @@ package com.android.example.github.ui.repo;
 import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.Observer;
 
-import com.android.example.github.repository.RepoRepository;
+import com.android.example.github.repository.ProjectRepository;
 import com.android.example.github.vo.Contributor;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -31,32 +31,32 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 @RunWith(JUnit4.class)
-public class RepoViewModelTest {
+public class ProjectViewModelTest {
 
     @Rule
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
-    private RepoRepository repository;
-    private RepoViewModel repoViewModel;
+    private ProjectRepository repository;
+    private ProjectViewModel projectViewModel;
 
     @Before
     public void setup() {
-        repository = mock(RepoRepository.class);
-        repoViewModel = new RepoViewModel(repository);
+        repository = mock(ProjectRepository.class);
+        projectViewModel = new ProjectViewModel(repository);
     }
 
 
     @Test
     public void testNull() {
-        assertThat(repoViewModel.getRepo(), notNullValue());
-        assertThat(repoViewModel.getContributors(), notNullValue());
-        verify(repository, never()).loadRepo(anyString(), anyString());
+        assertThat(projectViewModel.getProject(), notNullValue());
+        assertThat(projectViewModel.getContributors(), notNullValue());
+        verify(repository, never()).loadProject(anyString());
     }
 
     @Test
     public void dontFetchWithoutObservers() {
-        repoViewModel.setId("a", "b");
-        verify(repository, never()).loadRepo(anyString(), anyString());
+        projectViewModel.setId("a", "b");
+        verify(repository, never()).loadProject(anyString());
     }
 
     @Test
@@ -64,9 +64,9 @@ public class RepoViewModelTest {
         ArgumentCaptor<String> owner = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> name = ArgumentCaptor.forClass(String.class);
 
-        repoViewModel.setId("a", "b");
-        repoViewModel.getRepo().observeForever(mock(Observer.class));
-        verify(repository, times(1)).loadRepo(owner.capture(),
+        projectViewModel.setId("a", "b");
+        projectViewModel.getProject().observeForever(mock(Observer.class));
+        verify(repository, times(1)).loadProject(
                 name.capture());
         assertThat(owner.getValue(), is("a"));
         assertThat(name.getValue(), is("b"));
@@ -76,12 +76,12 @@ public class RepoViewModelTest {
     public void changeWhileObserved() {
         ArgumentCaptor<String> owner = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> name = ArgumentCaptor.forClass(String.class);
-        repoViewModel.getRepo().observeForever(mock(Observer.class));
+        projectViewModel.getProject().observeForever(mock(Observer.class));
 
-        repoViewModel.setId("a", "b");
-        repoViewModel.setId("c", "d");
+        projectViewModel.setId("a", "b");
+        projectViewModel.setId("c", "d");
 
-        verify(repository, times(2)).loadRepo(owner.capture(),
+        verify(repository, times(2)).loadProject(
                 name.capture());
         assertThat(owner.getAllValues(), is(Arrays.asList("a", "c")));
         assertThat(name.getAllValues(), is(Arrays.asList("b", "d")));
@@ -90,48 +90,48 @@ public class RepoViewModelTest {
     @Test
     public void contributors() {
         Observer<Resource<List<Contributor>>> observer = mock(Observer.class);
-        repoViewModel.getContributors().observeForever(observer);
+        projectViewModel.getContributors().observeForever(observer);
         verifyNoMoreInteractions(observer);
         verifyNoMoreInteractions(repository);
-        repoViewModel.setId("foo", "bar");
-        verify(repository).loadContributors("foo", "bar");
+        projectViewModel.setId("foo", "bar");
+        verify(repository).loadContributors("bar");
     }
 
     @Test
     public void resetId() {
-        Observer<RepoViewModel.RepoId> observer = mock(Observer.class);
-        repoViewModel.repoId.observeForever(observer);
+        Observer<ProjectViewModel.RepoId> observer = mock(Observer.class);
+        projectViewModel.projectId.observeForever(observer);
         verifyNoMoreInteractions(observer);
-        repoViewModel.setId("foo", "bar");
-        verify(observer).onChanged(new RepoViewModel.RepoId("foo", "bar"));
+        projectViewModel.setId("foo", "bar");
+        verify(observer).onChanged(new ProjectViewModel.RepoId("foo", "bar"));
         reset(observer);
-        repoViewModel.setId("foo", "bar");
+        projectViewModel.setId("foo", "bar");
         verifyNoMoreInteractions(observer);
-        repoViewModel.setId("a", "b");
-        verify(observer).onChanged(new RepoViewModel.RepoId("a", "b"));
+        projectViewModel.setId("a", "b");
+        verify(observer).onChanged(new ProjectViewModel.RepoId("a", "b"));
     }
 
     @Test
     public void retry() {
-        repoViewModel.retry();
+        projectViewModel.retry();
         verifyNoMoreInteractions(repository);
-        repoViewModel.setId("foo", "bar");
+        projectViewModel.setId("foo", "bar");
         verifyNoMoreInteractions(repository);
-        Observer<Resource<Repo>> observer = mock(Observer.class);
-        repoViewModel.getRepo().observeForever(observer);
-        verify(repository).loadRepo("foo", "bar");
+        Observer<Resource<Project>> observer = mock(Observer.class);
+        projectViewModel.getProject().observeForever(observer);
+        verify(repository).loadProject("bar");
         reset(repository);
-        repoViewModel.retry();
-        verify(repository).loadRepo("foo", "bar");
+        projectViewModel.retry();
+        verify(repository).loadProject("bar");
     }
 
     @Test
     public void nullRepoId() {
-        repoViewModel.setId(null, null);
-        Observer<Resource<Repo>> observer1 = mock(Observer.class);
+        projectViewModel.setId(null, null);
+        Observer<Resource<Project>> observer1 = mock(Observer.class);
         Observer<Resource<List<Contributor>>> observer2 = mock(Observer.class);
-        repoViewModel.getRepo().observeForever(observer1);
-        repoViewModel.getContributors().observeForever(observer2);
+        projectViewModel.getProject().observeForever(observer1);
+        projectViewModel.getContributors().observeForever(observer2);
         verify(observer1).onChanged(null);
         verify(observer2).onChanged(null);
     }

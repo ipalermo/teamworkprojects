@@ -14,7 +14,7 @@ import com.android.example.github.util.EspressoTestUtil;
 import com.android.example.github.util.RecyclerViewMatcher;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.util.ViewModelUtil;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 import com.android.example.github.vo.User;
 
@@ -51,7 +51,7 @@ public class UserFragmentTest {
     private NavigationController navigationController;
     private FragmentBindingAdapters fragmentBindingAdapters;
     private MutableLiveData<Resource<User>> userData = new MutableLiveData<>();
-    private MutableLiveData<Resource<List<Repo>>> repoListData = new MutableLiveData<>();
+    private MutableLiveData<Resource<List<Project>>> repoListData = new MutableLiveData<>();
 
     @Before
     public void init() throws Throwable {
@@ -108,27 +108,27 @@ public class UserFragmentTest {
 
     @Test
     public void loadRepos() {
-        List<Repo> repos = setRepos(2);
-        for (int pos = 0; pos < repos.size(); pos ++) {
-            Repo repo = repos.get(pos);
+        List<Project> projects = setRepos(2);
+        for (int pos = 0; pos < projects.size(); pos ++) {
+            Project project = projects.get(pos);
             onView(listMatcher().atPosition(pos)).check(
-                    matches(hasDescendant(withText(repo.name))));
+                    matches(hasDescendant(withText(project.name))));
             onView(listMatcher().atPosition(pos)).check(
-                    matches(hasDescendant(withText(repo.description))));
+                    matches(hasDescendant(withText(project.description))));
             onView(listMatcher().atPosition(pos)).check(
-                    matches(hasDescendant(withText("" + repo.stars))));
+                    matches(hasDescendant(withText("" + project.starred))));
         }
-        Repo repo3 = setRepos(3).get(2);
+        Project project3 = setRepos(3).get(2);
         onView(listMatcher().atPosition(2)).check(
-                matches(hasDescendant(withText(repo3.name))));
+                matches(hasDescendant(withText(project3.name))));
     }
 
     @Test
     public void clickRepo() {
-        List<Repo> repos = setRepos(2);
-        Repo selected = repos.get(1);
+        List<Project> projects = setRepos(2);
+        Project selected = projects.get(1);
         onView(withText(selected.description)).perform(click());
-        verify(navigationController).navigateToRepo(selected.owner.login, selected.name);
+        verify(navigationController).navigateToProject(selected.name);
     }
 
     @Test
@@ -162,15 +162,15 @@ public class UserFragmentTest {
 
     @NonNull
     private RecyclerViewMatcher listMatcher() {
-        return new RecyclerViewMatcher(R.id.repo_list);
+        return new RecyclerViewMatcher(R.id.project_list);
     }
 
-    private List<Repo> setRepos(int count) {
-        List<Repo> repos = new ArrayList<>();
+    private List<Project> setRepos(int count) {
+        List<Project> projects = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            repos.add(TestUtil.createRepo("foo", "name " + i, "desc" + i));
+            projects.add(TestUtil.createProject("foo", "name " + i, "desc" + i));
         }
-        repoListData.postValue(Resource.success(repos));
-        return repos;
+        repoListData.postValue(Resource.success(projects));
+        return projects;
     }
 }

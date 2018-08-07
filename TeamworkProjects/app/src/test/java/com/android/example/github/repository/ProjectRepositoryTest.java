@@ -8,15 +8,15 @@ import android.arch.lifecycle.Observer;
 
 import com.android.example.github.api.ApiResponse;
 import com.android.example.github.api.GetProjectsResponse;
-import com.android.example.github.api.GithubService;
-import com.android.example.github.db.GithubDb;
-import com.android.example.github.db.RepoDao;
+import com.android.example.github.api.TeamworkService;
+import com.android.example.github.db.ProjectDao;
+import com.android.example.github.db.TeamworkDb;
 import com.android.example.github.util.AbsentLiveData;
 import com.android.example.github.util.InstantAppExecutors;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.vo.Contributor;
 import com.android.example.github.vo.GetProjectsResult;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -48,68 +48,68 @@ import static org.mockito.Mockito.when;
 
 @SuppressWarnings("unchecked")
 @RunWith(JUnit4.class)
-public class RepoRepositoryTest {
-    private RepoRepository repository;
-    private RepoDao dao;
-    private GithubService service;
+public class ProjectRepositoryTest {
+    private ProjectRepository repository;
+    private ProjectDao dao;
+    private TeamworkService service;
     @Rule
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
     @Before
     public void init() {
-        dao = mock(RepoDao.class);
-        service = mock(GithubService.class);
-        GithubDb db = mock(GithubDb.class);
-        when(db.repoDao()).thenReturn(dao);
-        repository = new RepoRepository(new InstantAppExecutors(), db, dao, service);
+        dao = mock(ProjectDao.class);
+        service = mock(TeamworkService.class);
+        TeamworkDb db = mock(TeamworkDb.class);
+        when(db.projectDao()).thenReturn(dao);
+        repository = new ProjectRepository(new InstantAppExecutors(), db, dao, service);
     }
 
     @Test
     public void loadRepoFromNetwork() throws IOException {
-        MutableLiveData<Repo> dbData = new MutableLiveData<>();
-        when(dao.load("foo", "bar")).thenReturn(dbData);
+        MutableLiveData<Project> dbData = new MutableLiveData<>();
+        when(dao.load("bar")).thenReturn(dbData);
 
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
-        LiveData<ApiResponse<Repo>> call = successCall(repo);
-        when(service.getRepo("foo", "bar")).thenReturn(call);
+        Project project = TestUtil.createProject("foo", "bar", "desc");
+        LiveData<ApiResponse<Project>> call = successCall(project);
+        when(service.getProject("bar")).thenReturn(call);
 
-        LiveData<Resource<Repo>> data = repository.loadRepo("foo", "bar");
-        verify(dao).load("foo", "bar");
+        LiveData<Resource<Project>> data = repository.loadProject("bar");
+        verify(dao).load("bar");
         verifyNoMoreInteractions(service);
 
         Observer observer = mock(Observer.class);
         data.observeForever(observer);
         verifyNoMoreInteractions(service);
         verify(observer).onChanged(Resource.loading(null));
-        MutableLiveData<Repo> updatedDbData = new MutableLiveData<>();
-        when(dao.load("foo", "bar")).thenReturn(updatedDbData);
+        MutableLiveData<Project> updatedDbData = new MutableLiveData<>();
+        when(dao.load("bar")).thenReturn(updatedDbData);
 
         dbData.postValue(null);
-        verify(service).getRepo("foo", "bar");
-        verify(dao).insert(repo);
+        verify(service).getProject("bar");
+        verify(dao).insert(project);
 
-        updatedDbData.postValue(repo);
-        verify(observer).onChanged(Resource.success(repo));
+        updatedDbData.postValue(project);
+        verify(observer).onChanged(Resource.success(project));
     }
 
     @Test
     public void loadContributors() throws IOException {
         MutableLiveData<List<Contributor>> dbData = new MutableLiveData<>();
-        when(dao.loadContributors("foo", "bar")).thenReturn(dbData);
+        when(dao.loadContributors("bar")).thenReturn(dbData);
 
-        LiveData<Resource<List<Contributor>>> data = repository.loadContributors("foo",
+        LiveData<Resource<List<Contributor>>> data = repository.loadContributors(
                 "bar");
-        verify(dao).loadContributors("foo", "bar");
+        verify(dao).loadContributors("bar");
 
-        verify(service, never()).getContributors(anyString(), anyString());
+        verify(service, never()).getContributors(anyString());
 
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
-        Contributor contributor = TestUtil.createContributor(repo, "log", 3);
+        Project project = TestUtil.createProject("foo", "bar", "desc");
+        Contributor contributor = TestUtil.createContributor(project, "log", 3);
         // network does not send these
         contributor.setRepoOwner(null);
-        contributor.setRepoName(null);
+        contributor.setProjectId(null);
         List<Contributor> contributors = Collections.singletonList(contributor);
         LiveData<ApiResponse<List<Contributor>>> call = successCall(contributors);
-        when(service.getContributors("foo", "bar"))
+        when(service.getContributors("bar"))
                 .thenReturn(call);
 
         Observer<Resource<List<Contributor>>> observer = mock(Observer.class);
@@ -118,17 +118,17 @@ public class RepoRepositoryTest {
         verify(observer).onChanged(Resource.loading( null));
 
         MutableLiveData<List<Contributor>> updatedDbData = new MutableLiveData<>();
-        when(dao.loadContributors("foo", "bar")).thenReturn(updatedDbData);
+        when(dao.loadContributors("bar")).thenReturn(updatedDbData);
         dbData.setValue(Collections.emptyList());
 
-        verify(service).getContributors("foo", "bar");
+        verify(service).getContributors("bar");
         ArgumentCaptor<List<Contributor>> inserted = ArgumentCaptor.forClass((Class) List.class);
         verify(dao).insertContributors(inserted.capture());
 
 
         assertThat(inserted.getValue().size(), is(1));
         Contributor first = inserted.getValue().get(0);
-        assertThat(first.getRepoName(), is("bar"));
+        assertThat(first.getProjectId(), is("bar"));
         assertThat(first.getRepoOwner(), is("foo"));
 
         updatedDbData.setValue(contributors);
@@ -139,7 +139,7 @@ public class RepoRepositoryTest {
     public void searchNextPage_null() {
         when(dao.findSearchResult()).thenReturn(null);
         Observer<Resource<Boolean>> observer = mock(Observer.class);
-        repository.searchNextPage().observeForever(observer);
+        repository.projectsNextPage().observeForever(observer);
         verify(observer).onChanged(null);
     }
 
@@ -147,9 +147,9 @@ public class RepoRepositoryTest {
     public void search_fromDb() {
         List<Integer> ids = Arrays.asList(1, 2);
 
-        Observer<Resource<List<Repo>>> observer = mock(Observer.class);
+        Observer<Resource<List<Project>>> observer = mock(Observer.class);
         MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();
-        MutableLiveData<List<Repo>> repositories = new MutableLiveData<>();
+        MutableLiveData<List<Project>> repositories = new MutableLiveData<>();
 
         when(dao.search("foo")).thenReturn(dbSearchResult);
 
@@ -164,25 +164,25 @@ public class RepoRepositoryTest {
 
         dbSearchResult.postValue(dbResult);
 
-        List<Repo> repoList = new ArrayList<>();
-        repositories.postValue(repoList);
-        verify(observer).onChanged(Resource.success(repoList));
+        List<Project> projectList = new ArrayList<>();
+        repositories.postValue(projectList);
+        verify(observer).onChanged(Resource.success(projectList));
         verifyNoMoreInteractions(service);
     }
 
     @Test
     public void search_fromServer() {
         List<Integer> ids = Arrays.asList(1, 2);
-        Repo repo1 = TestUtil.createRepo(1, "owner", "repo 1", "desc 1");
-        Repo repo2 = TestUtil.createRepo(2, "owner", "repo 2", "desc 2");
+        Project project1 = TestUtil.createProject(1, "company", "repo 1", "desc 1");
+        Project project2 = TestUtil.createProject(2, "company", "repo 2", "desc 2");
 
-        Observer<Resource<List<Repo>>> observer = mock(Observer.class);
+        Observer<Resource<List<Project>>> observer = mock(Observer.class);
         MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();
-        MutableLiveData<List<Repo>> repositories = new MutableLiveData<>();
+        MutableLiveData<List<Project>> repositories = new MutableLiveData<>();
 
         GetProjectsResponse apiResponse = new GetProjectsResponse();
-        List<Repo> repoList = Arrays.asList(repo1, repo2);
-        apiResponse.setProjects(repoList);
+        List<Project> projectList = Arrays.asList(project1, project2);
+        apiResponse.setProjects(projectList);
         apiResponse.setTotal(2);
 
         MutableLiveData<ApiResponse<GetProjectsResponse>> callLiveData = new MutableLiveData<>();
@@ -206,9 +206,9 @@ public class RepoRepositoryTest {
         updatedResult.postValue(new GetProjectsResult(ids, null));
 
         callLiveData.postValue(new ApiResponse<>(Response.success(apiResponse)));
-        verify(dao).insertRepos(repoList);
-        repositories.postValue(repoList);
-        verify(observer).onChanged(Resource.success(repoList));
+        verify(dao).insertRepos(projectList);
+        repositories.postValue(projectList);
+        verify(observer).onChanged(Resource.success(projectList));
         verifyNoMoreInteractions(service);
     }
 
@@ -218,7 +218,7 @@ public class RepoRepositoryTest {
         MutableLiveData<ApiResponse<GetProjectsResponse>> apiResponse = new MutableLiveData<>();
         when(service.getProjects()).thenReturn(apiResponse);
 
-        Observer<Resource<List<Repo>>> observer = mock(Observer.class);
+        Observer<Resource<List<Project>>> observer = mock(Observer.class);
         repository.getProjects().observeForever(observer);
         verify(observer).onChanged(Resource.loading(null));
 

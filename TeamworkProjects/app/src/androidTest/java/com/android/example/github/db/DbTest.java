@@ -9,12 +9,12 @@ import org.junit.After;
 import org.junit.Before;
 
 abstract public class DbTest {
-    protected GithubDb db;
+    protected TeamworkDb db;
 
     @Before
     public void initDb() {
         db = Room.inMemoryDatabaseBuilder(InstrumentationRegistry.getContext(),
-                GithubDb.class).build();
+                TeamworkDb.class).build();
     }
 
     @After

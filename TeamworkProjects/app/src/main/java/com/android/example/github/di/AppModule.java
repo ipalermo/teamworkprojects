@@ -4,43 +4,37 @@ package com.android.example.github.di;
 import android.app.Application;
 import android.arch.persistence.room.Room;
 
-import com.android.example.github.api.GithubService;
-import com.android.example.github.db.GithubDb;
-import com.android.example.github.db.RepoDao;
+import com.android.example.github.api.ServiceGenerator;
+import com.android.example.github.api.TeamworkService;
+import com.android.example.github.db.ProjectDao;
+import com.android.example.github.db.TeamworkDb;
 import com.android.example.github.db.UserDao;
-import com.android.example.github.util.LiveDataCallAdapterFactory;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 @Module(includes = ViewModelModule.class)
 class AppModule {
     @Singleton @Provides
-    GithubService provideGithubService() {
-        return new Retrofit.Builder()
-                .baseUrl("https://api.github.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(new LiveDataCallAdapterFactory())
-                .build()
-                .create(GithubService.class);
+    TeamworkService provideGithubService() {
+        return new ServiceGenerator()
+                .createService(TeamworkService.class);
     }
 
     @Singleton @Provides
-    GithubDb provideDb(Application app) {
-        return Room.databaseBuilder(app, GithubDb.class,"github.db").build();
+    TeamworkDb provideDb(Application app) {
+        return Room.databaseBuilder(app, TeamworkDb.class,"teamwork.db").build();
     }
 
     @Singleton @Provides
-    UserDao provideUserDao(GithubDb db) {
+    UserDao provideUserDao(TeamworkDb db) {
         return db.userDao();
     }
 
     @Singleton @Provides
-    RepoDao provideRepoDao(GithubDb db) {
-        return db.repoDao();
+    ProjectDao provideRepoDao(TeamworkDb db) {
+        return db.projectDao();
     }
 }

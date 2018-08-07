@@ -18,7 +18,7 @@ import com.android.example.github.util.TaskExecutorWithIdlingResourceRule;
 import com.android.example.github.util.TestUtil;
 import com.android.example.github.util.ViewModelUtil;
 import com.android.example.github.vo.Contributor;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 
 import org.junit.Before;
@@ -45,17 +45,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
-public class RepoFragmentTest {
+public class ProjectFragmentTest {
     @Rule
     public ActivityTestRule<SingleFragmentActivity> activityRule =
             new ActivityTestRule<>(SingleFragmentActivity.class, true, true);
     @Rule
     public TaskExecutorWithIdlingResourceRule executorRule =
             new TaskExecutorWithIdlingResourceRule();
-    private MutableLiveData<Resource<Repo>> repo = new MutableLiveData<>();
+    private MutableLiveData<Resource<Project>> repo = new MutableLiveData<>();
     private MutableLiveData<Resource<List<Contributor>>> contributors = new MutableLiveData<>();
-    private RepoFragment repoFragment;
-    private RepoViewModel viewModel;
+    private ProjectFragment repoFragment;
+    private ProjectViewModel viewModel;
 
     private FragmentBindingAdapters fragmentBindingAdapters;
     private NavigationController navigationController;
@@ -64,12 +64,12 @@ public class RepoFragmentTest {
     @Before
     public void init() {
         EspressoTestUtil.disableProgressBarAnimations(activityRule);
-        repoFragment = RepoFragment.create("a", "b");
-        viewModel = mock(RepoViewModel.class);
+        repoFragment = ProjectFragment.create("b");
+        viewModel = mock(ProjectViewModel.class);
         fragmentBindingAdapters = mock(FragmentBindingAdapters.class);
         navigationController = mock(NavigationController.class);
         doNothing().when(viewModel).setId(anyString(), anyString());
-        when(viewModel.getRepo()).thenReturn(repo);
+        when(viewModel.getProject()).thenReturn(repo);
         when(viewModel.getContributors()).thenReturn(contributors);
 
         repoFragment.viewModelFactory = ViewModelUtil.createFor(viewModel);
@@ -87,8 +87,8 @@ public class RepoFragmentTest {
 
     @Test
     public void testValueWhileLoading() {
-        Repo repo = TestUtil.createRepo("yigit", "foo", "foo-bar");
-        this.repo.postValue(Resource.loading(repo));
+        Project project = TestUtil.createProject("yigit", "foo", "foo-bar");
+        this.repo.postValue(Resource.loading(project));
         onView(withId(R.id.progress_bar)).check(matches(not(isDisplayed())));
         onView(withId(R.id.name)).check(matches(
                 withText(getString(R.string.repo_full_name, "yigit", "foo"))));
@@ -97,8 +97,8 @@ public class RepoFragmentTest {
 
     @Test
     public void testLoaded() throws InterruptedException {
-        Repo repo = TestUtil.createRepo("foo", "bar", "buzz");
-        this.repo.postValue(Resource.success(repo));
+        Project project = TestUtil.createProject("foo", "bar", "buzz");
+        this.repo.postValue(Resource.success(project));
         onView(withId(R.id.progress_bar)).check(matches(not(isDisplayed())));
         onView(withId(R.id.name)).check(matches(
                 withText(getString(R.string.repo_full_name, "foo", "bar"))));
@@ -116,13 +116,13 @@ public class RepoFragmentTest {
 
         onView(withId(R.id.progress_bar)).check(matches(isDisplayed()));
         onView(withId(R.id.retry)).check(matches(not(isDisplayed())));
-        Repo repo = TestUtil.createRepo("owner", "name", "desc");
-        this.repo.postValue(Resource.success(repo));
+        Project project = TestUtil.createProject("company", "name", "desc");
+        this.repo.postValue(Resource.success(project));
 
         onView(withId(R.id.progress_bar)).check(matches(not(isDisplayed())));
         onView(withId(R.id.retry)).check(matches(not(isDisplayed())));
         onView(withId(R.id.name)).check(matches(
-                withText(getString(R.string.repo_full_name, "owner", "name"))));
+                withText(getString(R.string.repo_full_name, "company", "name"))));
         onView(withId(R.id.description)).check(matches(withText("desc")));
     }
 
@@ -162,11 +162,11 @@ public class RepoFragmentTest {
     }
 
     private void setContributors(String... names) {
-        Repo repo = TestUtil.createRepo("foo", "bar", "desc");
+        Project project = TestUtil.createProject("foo", "bar", "desc");
         List<Contributor> contributors = new ArrayList<>();
         int contributionCount = 100;
         for (String name : names) {
-            contributors.add(TestUtil.createContributor(repo, name, contributionCount--));
+            contributors.add(TestUtil.createContributor(project, name, contributionCount--));
         }
         this.contributors.postValue(Resource.success(contributors));
     }

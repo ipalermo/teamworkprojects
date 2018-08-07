@@ -6,8 +6,8 @@ import android.arch.lifecycle.MutableLiveData;
 
 import com.android.example.github.api.ApiResponse;
 import com.android.example.github.api.GetProjectsResponse;
-import com.android.example.github.api.GithubService;
-import com.android.example.github.db.GithubDb;
+import com.android.example.github.api.TeamworkService;
+import com.android.example.github.db.TeamworkDb;
 import com.android.example.github.vo.GetProjectsResult;
 import com.android.example.github.vo.Resource;
 
@@ -20,19 +20,19 @@ import retrofit2.Response;
 /**
  * A task that reads the getProjects result in the database and fetches the next page, if it has one.
  */
-public class FetchNextProjectsPageTask implements Runnable {
+public class ProjectsNextPageTask implements Runnable {
     private final MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
-    private final GithubService githubService;
-    private final GithubDb db;
+    private final TeamworkService teamworkService;
+    private final TeamworkDb db;
 
-    FetchNextProjectsPageTask(GithubService githubService, GithubDb db) {
-        this.githubService = githubService;
+    ProjectsNextPageTask(TeamworkService teamworkService, TeamworkDb db) {
+        this.teamworkService = teamworkService;
         this.db = db;
     }
 
     @Override
     public void run() {
-        GetProjectsResult current = db.repoDao().findSearchResult();
+        GetProjectsResult current = db.projectDao().findSearchResult();
         if(current == null) {
             liveData.postValue(null);
             return;
@@ -43,21 +43,21 @@ public class FetchNextProjectsPageTask implements Runnable {
             return;
         }
         try {
-            Response<GetProjectsResponse> response = githubService
+            Response<GetProjectsResponse> response = teamworkService
                     .getProjects(nextPage).execute();
             ApiResponse<GetProjectsResponse> apiResponse = new ApiResponse<>(response);
             if (apiResponse.isSuccessful()) {
                 // we merge all repo ids into 1 list so that it is easier to fetch the result list.
                 List<Integer> ids = new ArrayList<>();
-                ids.addAll(current.repoIds);
+                ids.addAll(current.projectIds);
                 //noinspection ConstantConditions
                 ids.addAll(apiResponse.body.getRepoIds());
                 GetProjectsResult merged = new GetProjectsResult(ids,
                         apiResponse.getNextPage());
                 try {
                     db.beginTransaction();
-                    db.repoDao().insert(merged);
-                    db.repoDao().insertRepos(apiResponse.body.getProjects());
+                    db.projectDao().insert(merged);
+                    db.projectDao().insertRepos(apiResponse.body.getProjects());
                     db.setTransactionSuccessful();
                 } finally {
                     db.endTransaction();

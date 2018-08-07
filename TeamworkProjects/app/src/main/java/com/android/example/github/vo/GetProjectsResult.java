@@ -6,24 +6,24 @@ import android.arch.persistence.room.PrimaryKey;
 import android.arch.persistence.room.TypeConverters;
 import android.support.annotation.Nullable;
 
-import com.android.example.github.db.GithubTypeConverters;
+import com.android.example.github.db.TeamworkTypeConverters;
 
 import java.util.List;
 
 @Entity
-@TypeConverters(GithubTypeConverters.class)
+@TypeConverters(TeamworkTypeConverters.class)
 public class GetProjectsResult {
 
     @PrimaryKey(autoGenerate = true)
     public Integer Id;
 
-    public final List<Integer> repoIds;
+    public final List<Integer> projectIds;
     @Nullable
     public final Integer next;
 
-    public GetProjectsResult(List<Integer> repoIds,
+    public GetProjectsResult(List<Integer> projectIds,
                              @Nullable Integer next) {
-        this.repoIds = repoIds;
+        this.projectIds = projectIds;
         this.next = next;
     }
 }

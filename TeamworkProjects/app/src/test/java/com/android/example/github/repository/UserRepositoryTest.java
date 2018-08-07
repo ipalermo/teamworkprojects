@@ -7,7 +7,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 
 import com.android.example.github.api.ApiResponse;
-import com.android.example.github.api.GithubService;
+import com.android.example.github.api.TeamworkService;
 import com.android.example.github.db.UserDao;
 import com.android.example.github.util.ApiUtil;
 import com.android.example.github.util.InstantAppExecutors;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 @RunWith(JUnit4.class)
 public class UserRepositoryTest {
     private UserDao userDao;
-    private GithubService githubService;
+    private TeamworkService teamworkService;
     private UserRepository repo;
 
     @Rule
@@ -38,8 +38,8 @@ public class UserRepositoryTest {
     @Before
     public void setup() {
         userDao = mock(UserDao.class);
-        githubService = mock(GithubService.class);
-        repo = new UserRepository(new InstantAppExecutors(), userDao, githubService);
+        teamworkService = mock(TeamworkService.class);
+        repo = new UserRepository(new InstantAppExecutors(), userDao, teamworkService);
     }
 
     @Test
@@ -54,15 +54,15 @@ public class UserRepositoryTest {
         when(userDao.findByLogin("foo")).thenReturn(dbData);
         User user = TestUtil.createUser("foo");
         LiveData<ApiResponse<User>> call = ApiUtil.successCall(user);
-        when(githubService.getUser("foo")).thenReturn(call);
+        when(teamworkService.getUser("foo")).thenReturn(call);
         Observer<Resource<User>> observer = mock(Observer.class);
 
         repo.loadUser("foo").observeForever(observer);
-        verify(githubService, never()).getUser("foo");
+        verify(teamworkService, never()).getUser("foo");
         MutableLiveData<User> updatedDbData = new MutableLiveData<>();
         when(userDao.findByLogin("foo")).thenReturn(updatedDbData);
         dbData.setValue(null);
-        verify(githubService).getUser("foo");
+        verify(teamworkService).getUser("foo");
     }
 
     @Test
@@ -73,7 +73,7 @@ public class UserRepositoryTest {
         when(userDao.findByLogin("foo")).thenReturn(dbData);
         Observer<Resource<User>> observer = mock(Observer.class);
         repo.loadUser("foo").observeForever(observer);
-        verify(githubService, never()).getUser("foo");
+        verify(teamworkService, never()).getUser("foo");
         verify(observer).onChanged(Resource.success(user));
     }
 }

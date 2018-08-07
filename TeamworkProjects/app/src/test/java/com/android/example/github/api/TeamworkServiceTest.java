@@ -5,7 +5,7 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule;
 
 import com.android.example.github.util.LiveDataCallAdapterFactory;
 import com.android.example.github.vo.Contributor;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.User;
 
 import org.junit.After;
@@ -37,11 +37,11 @@ import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(JUnit4.class)
-public class GithubServiceTest {
+public class TeamworkServiceTest {
     @Rule
     public InstantTaskExecutorRule instantExecutorRule = new InstantTaskExecutorRule();
 
-    private GithubService service;
+    private TeamworkService service;
 
     private MockWebServer mockWebServer;
 
@@ -53,7 +53,7 @@ public class GithubServiceTest {
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(new LiveDataCallAdapterFactory())
                 .build()
-                .create(GithubService.class);
+                .create(TeamworkService.class);
     }
 
     @After
@@ -77,31 +77,31 @@ public class GithubServiceTest {
 
     @Test
     public void getRepos() throws IOException, InterruptedException {
-        enqueueResponse("repos-yigit.json");
-        List<Repo> repos = getValue(service.getRepos("yigit")).body;
+        enqueueResponse("projects-yigit.json");
+        List<Project> projects = getValue(service.getRepos("yigit")).body;
 
         RecordedRequest request = mockWebServer.takeRequest();
-        assertThat(request.getPath(), is("/users/yigit/repos"));
+        assertThat(request.getPath(), is("/users/yigit/projects"));
 
-        assertThat(repos.size(), is(2));
+        assertThat(projects.size(), is(2));
 
-        Repo repo = repos.get(0);
-        assertThat(repo.fullName, is("yigit/AckMate"));
+        Project project = projects.get(0);
+        assertThat(project.fullName, is("yigit/AckMate"));
 
-        Repo.Owner owner = repo.owner;
-        assertThat(owner, notNullValue());
-        assertThat(owner.login, is("yigit"));
-        assertThat(owner.url, is("https://api.github.com/users/yigit"));
+        Project.Company company = project.company;
+        assertThat(company, notNullValue());
+        assertThat(company.id, is("yigit"));
+        assertThat(company.name, is("https://api.github.com/users/yigit"));
 
-        Repo repo2 = repos.get(1);
-        assertThat(repo2.fullName, is("yigit/android-architecture"));
+        Project project2 = projects.get(1);
+        assertThat(project2.fullName, is("yigit/android-architecture"));
     }
 
     @Test
     public void getContributors() throws IOException, InterruptedException {
         enqueueResponse("contributors.json");
         List<Contributor> contributors = getValue(
-                service.getContributors("foo", "bar")).body;
+                service.getContributors("bar")).body;
         assertThat(contributors.size(), is(3));
         Contributor yigit = contributors.get(0);
         assertThat(yigit.getLogin(), is("yigit"));

@@ -5,10 +5,10 @@ import android.arch.core.executor.testing.InstantTaskExecutorRule;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 
-import com.android.example.github.repository.RepoRepository;
+import com.android.example.github.repository.ProjectRepository;
 import com.android.example.github.repository.UserRepository;
 import com.android.example.github.util.TestUtil;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 import com.android.example.github.vo.User;
 
@@ -41,13 +41,13 @@ public class UserViewModelTest {
 
     private UserViewModel userViewModel;
     private UserRepository userRepository;
-    private RepoRepository repoRepository;
+    private ProjectRepository projectRepository;
 
     @Before
     public void setup() {
         userRepository = mock(UserRepository.class);
-        repoRepository = mock(RepoRepository.class);
-        userViewModel = new UserViewModel(userRepository, repoRepository);
+        projectRepository = mock(ProjectRepository.class);
+        userViewModel = new UserViewModel(userRepository, projectRepository);
     }
 
     @Test
@@ -97,39 +97,39 @@ public class UserViewModelTest {
     @Test
     public void loadRepositories() {
         userViewModel.getRepositories().observeForever(mock(Observer.class));
-        verifyNoMoreInteractions(repoRepository);
+        verifyNoMoreInteractions(projectRepository);
         userViewModel.setLogin("foo");
-        verify(repoRepository).loadRepos("foo");
-        reset(repoRepository);
+        verify(projectRepository).loadRepos("foo");
+        reset(projectRepository);
         userViewModel.setLogin("bar");
-        verify(repoRepository).loadRepos("bar");
+        verify(projectRepository).loadRepos("bar");
         verifyNoMoreInteractions(userRepository);
     }
 
     @Test
     public void retry() {
         userViewModel.setLogin("foo");
-        verifyNoMoreInteractions(repoRepository, userRepository);
+        verifyNoMoreInteractions(projectRepository, userRepository);
         userViewModel.retry();
-        verifyNoMoreInteractions(repoRepository, userRepository);
+        verifyNoMoreInteractions(projectRepository, userRepository);
         Observer userObserver = mock(Observer.class);
         userViewModel.getUser().observeForever(userObserver);
         Observer repoObserver = mock(Observer.class);
         userViewModel.getRepositories().observeForever(repoObserver);
 
         verify(userRepository).loadUser("foo");
-        verify(repoRepository).loadRepos("foo");
-        reset(userRepository, repoRepository);
+        verify(projectRepository).loadRepos("foo");
+        reset(userRepository, projectRepository);
 
         userViewModel.retry();
         verify(userRepository).loadUser("foo");
-        verify(repoRepository).loadRepos("foo");
-        reset(userRepository, repoRepository);
+        verify(projectRepository).loadRepos("foo");
+        reset(userRepository, projectRepository);
         userViewModel.getUser().removeObserver(userObserver);
         userViewModel.getRepositories().removeObserver(repoObserver);
 
         userViewModel.retry();
-        verifyNoMoreInteractions(userRepository, repoRepository);
+        verifyNoMoreInteractions(userRepository, projectRepository);
     }
 
     @Test
@@ -143,7 +143,7 @@ public class UserViewModelTest {
 
     @Test
     public void nullRepoList() {
-        Observer<Resource<List<Repo>>> observer = mock(Observer.class);
+        Observer<Resource<List<Project>>> observer = mock(Observer.class);
         userViewModel.setLogin("foo");
         userViewModel.setLogin(null);
         userViewModel.getRepositories().observeForever(observer);
@@ -167,6 +167,6 @@ public class UserViewModelTest {
     @Test
     public void noRetryWithoutUser() {
         userViewModel.retry();
-        verifyNoMoreInteractions(userRepository, repoRepository);
+        verifyNoMoreInteractions(userRepository, projectRepository);
     }
 }

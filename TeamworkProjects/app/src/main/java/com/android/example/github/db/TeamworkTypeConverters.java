@@ -7,7 +7,7 @@ import android.arch.persistence.room.util.StringUtil;
 import java.util.Collections;
 import java.util.List;
 
-public class GithubTypeConverters {
+public class TeamworkTypeConverters {
     @TypeConverter
     public static List<Integer> stringToIntList(String data) {
         if (data == null) {

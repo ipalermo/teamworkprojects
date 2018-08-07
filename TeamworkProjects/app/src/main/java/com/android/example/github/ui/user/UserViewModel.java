@@ -7,11 +7,11 @@ import android.arch.lifecycle.Transformations;
 import android.arch.lifecycle.ViewModel;
 import android.support.annotation.VisibleForTesting;
 
-import com.android.example.github.repository.RepoRepository;
+import com.android.example.github.repository.ProjectRepository;
 import com.android.example.github.repository.UserRepository;
 import com.android.example.github.util.AbsentLiveData;
 import com.android.example.github.util.Objects;
-import com.android.example.github.vo.Repo;
+import com.android.example.github.vo.Project;
 import com.android.example.github.vo.Resource;
 import com.android.example.github.vo.User;
 
@@ -22,11 +22,11 @@ import javax.inject.Inject;
 public class UserViewModel extends ViewModel {
     @VisibleForTesting
     final MutableLiveData<String> login = new MutableLiveData<>();
-    private final LiveData<Resource<List<Repo>>> repositories;
+    private final LiveData<Resource<List<Project>>> repositories;
     private final LiveData<Resource<User>> user;
     @SuppressWarnings("unchecked")
     @Inject
-    public UserViewModel(UserRepository userRepository, RepoRepository repoRepository) {
+    public UserViewModel(UserRepository userRepository, ProjectRepository projectRepository) {
         user = Transformations.switchMap(login, login -> {
             if (login == null) {
                 return AbsentLiveData.create();
@@ -38,7 +38,7 @@ public class UserViewModel extends ViewModel {
             if (login == null) {
                 return AbsentLiveData.create();
             } else {
-                return repoRepository.loadRepos(login);
+                return projectRepository.loadRepos(login);
             }
         });
     }
@@ -57,7 +57,7 @@ public class UserViewModel extends ViewModel {
     }
 
     @VisibleForTesting
-    public LiveData<Resource<List<Repo>>> getRepositories() {
+    public LiveData<Resource<List<Project>>> getRepositories() {
         return repositories;
     }
 

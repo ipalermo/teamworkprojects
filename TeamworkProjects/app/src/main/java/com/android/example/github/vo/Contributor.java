@@ -7,10 +7,10 @@ import android.support.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
-@Entity(primaryKeys = {"repoName", "repoOwner", "login"},
-        foreignKeys = @ForeignKey(entity = Repo.class,
-                parentColumns = {"name", "owner_login"},
-                childColumns = {"repoName", "repoOwner"},
+@Entity(primaryKeys = {"projectId"},
+        foreignKeys = @ForeignKey(entity = Project.class,
+                parentColumns = {"id"},
+                childColumns = {"projectId"},
                 onUpdate = ForeignKey.CASCADE,
                 deferred = true))
 public class Contributor {
@@ -26,10 +26,7 @@ public class Contributor {
     private final String avatarUrl;
 
     @NonNull
-    private String repoName;
-
-    @NonNull
-    private String repoOwner;
+    private int projectId;
 
     public Contributor(String login, int contributions, String avatarUrl) {
         this.login = login;
@@ -37,12 +34,8 @@ public class Contributor {
         this.avatarUrl = avatarUrl;
     }
 
-    public void setRepoName(String repoName) {
-        this.repoName = repoName;
-    }
-
-    public void setRepoOwner(String repoOwner) {
-        this.repoOwner = repoOwner;
+    public void setProjectId(int projectId) {
+        this.projectId = projectId;
     }
 
     public String getLogin() {
@@ -57,11 +50,7 @@ public class Contributor {
         return avatarUrl;
     }
 
-    public String getRepoName() {
-        return repoName;
-    }
-
-    public String getRepoOwner() {
-        return repoOwner;
+    public int getProjectId() {
+        return projectId;
     }
 }

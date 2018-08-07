@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 
 import com.android.example.github.AppExecutors;
 import com.android.example.github.api.ApiResponse;
-import com.android.example.github.api.GithubService;
+import com.android.example.github.api.TeamworkService;
 import com.android.example.github.db.UserDao;
 import com.android.example.github.vo.Resource;
 import com.android.example.github.vo.User;
@@ -21,13 +21,13 @@ import javax.inject.Singleton;
 @Singleton
 public class UserRepository {
     private final UserDao userDao;
-    private final GithubService githubService;
+    private final TeamworkService teamworkService;
     private final AppExecutors appExecutors;
 
     @Inject
-    UserRepository(AppExecutors appExecutors, UserDao userDao, GithubService githubService) {
+    UserRepository(AppExecutors appExecutors, UserDao userDao, TeamworkService teamworkService) {
         this.userDao = userDao;
-        this.githubService = githubService;
+        this.teamworkService = teamworkService;
         this.appExecutors = appExecutors;
     }
 
@@ -52,7 +52,7 @@ public class UserRepository {
             @NonNull
             @Override
             protected LiveData<ApiResponse<User>> createCall() {
-                return githubService.getUser(login);
+                return teamworkService.getUser(login);
             }
         }.asLiveData();
     }

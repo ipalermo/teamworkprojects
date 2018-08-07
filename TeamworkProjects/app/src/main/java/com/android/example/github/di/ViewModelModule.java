@@ -3,7 +3,7 @@ package com.android.example.github.di;
 import android.arch.lifecycle.ViewModel;
 import android.arch.lifecycle.ViewModelProvider;
 
-import com.android.example.github.ui.repo.RepoViewModel;
+import com.android.example.github.ui.repo.ProjectViewModel;
 import com.android.example.github.ui.search.ProjectsViewModel;
 import com.android.example.github.ui.user.UserViewModel;
 import com.android.example.github.viewmodel.GithubViewModelFactory;
@@ -26,8 +26,8 @@ abstract class ViewModelModule {
 
     @Binds
     @IntoMap
-    @ViewModelKey(RepoViewModel.class)
-    abstract ViewModel bindRepoViewModel(RepoViewModel repoViewModel);
+    @ViewModelKey(ProjectViewModel.class)
+    abstract ViewModel bindRepoViewModel(ProjectViewModel projectViewModel);
 
     @Binds
     abstract ViewModelProvider.Factory bindViewModelFactory(GithubViewModelFactory factory);
