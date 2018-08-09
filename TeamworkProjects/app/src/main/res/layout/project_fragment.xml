@@ -81,19 +81,20 @@
                     android:id="@+id/dates_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:srcCompat="@android:drawable/ic_menu_my_calendar" />
+                    app:srcCompat="@drawable/ic_date_range"
+                    android:tint="@color/background_dark"/>
 
                 <TextView
                     android:id="@+id/fromDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.startDate}"
                     tools:text="10/08/2018"
@@ -101,21 +102,32 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
+                    android:id="@+id/dates_separator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintStart_toEndOf="@id/fromDate"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginLeft="2dp"
+                    android:text=" - "/>
+
+                <TextView
                     android:id="@+id/toDate"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginLeft="2dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.endDate}"
                     tools:text="01/12/2018"
-                    app:layout_constraintStart_toEndOf="@id/fromDate"
+                    app:layout_constraintStart_toEndOf="@id/dates_separator"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <View
                     android:id="@+id/divider"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/dates_icon"
@@ -125,19 +137,20 @@
                     android:id="@+id/status_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/divider"
-                    app:srcCompat="@android:drawable/ic_menu_recent_history" />
+                    app:srcCompat="@drawable/ic_status"
+                    android:tint="@color/background_dark"/>
 
                 <TextView
                     android:id="@+id/status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.status}"
                     tools:text="10/08/2018"
@@ -148,8 +161,8 @@
                     android:id="@+id/subStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginLeft="8dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.subStatus}"
                     tools:text="01/12/2018"
@@ -158,8 +171,8 @@
 
                 <View
                     android:id="@+id/divider2"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/status_icon"
@@ -170,7 +183,7 @@
                     style="?android:attr/textAppearanceSmall"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_margin="16dp"
                     android:maxHeight="50dp"
                     android:text="@{project.description}"
                     app:layout_constraintEnd_toEndOf="parent"

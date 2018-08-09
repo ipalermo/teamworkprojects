@@ -8,6 +8,7 @@ android {
         applicationId "com.android.example.github"
         minSdkVersion build_versions.min_sdk
         targetSdkVersion build_versions.target_sdk
+        vectorDrawables.useSupportLibrary = true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "com.android.example.github.util.GithubTestRunner"
