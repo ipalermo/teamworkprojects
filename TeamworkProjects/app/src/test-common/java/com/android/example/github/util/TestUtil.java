@@ -19,24 +19,23 @@ public class TestUtil {
                                                String description) {
         List<Project> projects = new ArrayList<>();
         for(int i = 0; i < count; i ++) {
-            projects.add(createProject(owner + i, name + i, description + i));
+            projects.add(createProject( i, name + i, description + i));
         }
         return projects;
     }
 
-    public static Project createProject(String owner, String name, String description) {
-        return createProject(Project.UNKNOWN_ID, owner, name, description);
+    public static Project createProject(String name, String description) {
+        return createProject(Project.UNKNOWN_ID, name, description);
     }
 
-    public static Project createProject(int id, String owner, String name, String description) {
+    public static Project createProject(int id, String name, String description) {
         return new Project(id, name,
-                description, new Project.Company(owner, null), true);
+                description, new Project.Company("company" + String.valueOf(id) , "name"), true);
     }
 
     public static Contributor createContributor(Project project, String login, int contributions) {
         Contributor contributor = new Contributor(login, contributions, null);
-        contributor.setProjectId(project.name);
-        contributor.setRepoOwner(project.company.id);
+        contributor.setProjectId(project.id);
         return contributor;
     }
 }

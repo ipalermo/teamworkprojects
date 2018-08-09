@@ -24,9 +24,9 @@ public class NavigationController {
     }
 
     public void navigateToProjectsList() {
-        ProjectListFragment searchFragment = new ProjectListFragment();
+        ProjectListFragment projectListFragment = new ProjectListFragment();
         fragmentManager.beginTransaction()
-                .replace(containerId, searchFragment)
+                .replace(containerId, projectListFragment)
                 .commitAllowingStateLoss();
     }
 

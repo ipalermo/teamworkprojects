@@ -36,31 +36,6 @@ public class ApiResponseTest {
     }
 
     @Test
-    public void link() {
-        String link = "<https://api.github.com/getProjects/repositories?q=foo&page=2>; rel=\"next\","
-                + " <https://api.github.com/getProjects/repositories?q=foo&page=34>; rel=\"last\"";
-        okhttp3.Headers headers = okhttp3.Headers.of("link", link);
-        ApiResponse<String> response = new ApiResponse<>(Response.success("foo", headers));
-        assertThat(response.getNextPage(), is(2));
-    }
-
-    @Test
-    public void badPageNumber() {
-        String link = "<https://api.github.com/getProjects/repositories?q=foo&page=dsa>; rel=\"next\"";
-        okhttp3.Headers headers = okhttp3.Headers.of("link", link);
-        ApiResponse<String> response = new ApiResponse<>(Response.success("foo", headers));
-        assertThat(response.getNextPage(), nullValue());
-    }
-
-    @Test
-    public void badLinkHeader() {
-        String link = "<https://api.github.com/getProjects/repositories?q=foo&page=dsa>; relx=\"next\"";
-        okhttp3.Headers headers = okhttp3.Headers.of("link", link);
-        ApiResponse<String> response = new ApiResponse<>(Response.success("foo", headers));
-        assertThat(response.getNextPage(), nullValue());
-    }
-
-    @Test
     public void error() {
         ApiResponse<String> response = new ApiResponse<String>(Response.error(400,
                 ResponseBody.create(MediaType.parse("application/txt"), "blah")));

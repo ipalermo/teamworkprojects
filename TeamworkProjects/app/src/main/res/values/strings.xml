@@ -2,12 +2,21 @@
 
 <resources>
     <string name="app_name">Teamwork Projects</string>
+    <string name="navigation_drawer_header_title" translatable="false">Teamwork Projects</string>
+
+    <string name="projects_list_fragment_title">Projects</string>
+    <string name="project_fragment_title">""</string>
+    <string name="about_fragment_title">"About"</string>
+    <string name="help_menu_option">"Help"</string>
+
     <string name="retry">Retry</string>
     <string name="unknown_error">Unknown Error</string>
+
     <string name="a11y_user_photo">user photo</string>
     <string name="a11y_user_name">user name</string>
-    <string name="search_hint">search projects</string>
-    <string name="repo_full_name"><b>%s</b>/%s</string>
+    <string name="project_image_descr">project image</string>
+    <string name="navigation_drawer_header_content_description">Navigation drawer header logo</string>
+
     <string name="empty_projects_result">No projects found</string>
     <string name="a11y_contributor_avatar">contributor avatar</string>
 </resources>

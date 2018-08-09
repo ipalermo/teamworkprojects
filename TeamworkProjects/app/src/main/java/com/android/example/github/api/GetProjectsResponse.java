@@ -30,11 +30,11 @@ public class GetProjectsResponse {
     }
 
     @NonNull
-    public List<Integer> getRepoIds() {
-        List<Integer> repoIds = new ArrayList<>();
+    public List<Integer> getProjectIds() {
+        List<Integer> projectIds = new ArrayList<>();
         for (Project project : projects) {
-            repoIds.add(project.id);
+            projectIds.add(project.id);
         }
-        return repoIds;
+        return projectIds;
     }
 }

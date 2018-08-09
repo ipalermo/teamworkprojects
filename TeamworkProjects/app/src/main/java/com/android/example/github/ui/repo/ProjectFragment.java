@@ -65,7 +65,7 @@ public class ProjectFragment extends Fragment implements Injectable {
         ContributorAdapter adapter = new ContributorAdapter(dataBindingComponent,
                 contributor -> navigationController.navigateToUser(contributor.getLogin()));
         this.adapter = new AutoClearedValue<>(this, adapter);
-        binding.get().contributorList.setAdapter(adapter);
+//        binding.get().contributorList.setAdapter(adapter);
         initContributorList(projectViewModel);
     }
 

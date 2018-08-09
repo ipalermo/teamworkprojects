@@ -61,7 +61,7 @@ public class ProjectListFragment extends Fragment implements Injectable {
                 project -> navigationController.navigateToProject(project.id));
         binding.get().projectList.setAdapter(rvAdapter);
         adapter = new AutoClearedValue<>(this, rvAdapter);
-
+        projectsViewModel.loadProjects();
         binding.get().setCallback(() -> projectsViewModel.loadProjects());
     }
 

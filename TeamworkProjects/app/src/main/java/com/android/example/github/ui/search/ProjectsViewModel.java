@@ -46,7 +46,7 @@ public class ProjectsViewModel extends ViewModel {
         nextPageHandler.queryNextPage();
     }
 
-    void loadProjects() {
+    public void loadProjects() {
         results =  projectsRepository.getProjects();
     }
 
@@ -82,7 +82,6 @@ public class ProjectsViewModel extends ViewModel {
         @Nullable
         private LiveData<Resource<Boolean>> nextPageLiveData;
         private final MutableLiveData<LoadMoreState> loadMoreState = new MutableLiveData<>();
-        private String query;
         private final ProjectRepository repository;
         @VisibleForTesting
         boolean hasMore;
@@ -126,9 +125,6 @@ public class ProjectsViewModel extends ViewModel {
             if (nextPageLiveData != null) {
                 nextPageLiveData.removeObserver(this);
                 nextPageLiveData = null;
-                if (hasMore) {
-                    query = null;
-                }
             }
         }
 

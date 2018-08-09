@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +77,7 @@ public class TeamworkServiceTest {
     @Test
     public void getRepos() throws IOException, InterruptedException {
         enqueueResponse("projects-yigit.json");
-        List<Project> projects = getValue(service.getRepos("yigit")).body;
+        List<Project> projects = getValue(service.getProjects("yigit")).body;
 
         RecordedRequest request = mockWebServer.takeRequest();
         assertThat(request.getPath(), is("/users/yigit/projects"));
@@ -86,22 +85,22 @@ public class TeamworkServiceTest {
         assertThat(projects.size(), is(2));
 
         Project project = projects.get(0);
-        assertThat(project.fullName, is("yigit/AckMate"));
+        assertThat(project.name, is("Brazil"));
 
         Project.Company company = project.company;
         assertThat(company, notNullValue());
-        assertThat(company.id, is("yigit"));
-        assertThat(company.name, is("https://api.github.com/users/yigit"));
+        assertThat(company.id, is("113332"));
+        assertThat(company.name, is("Cat"));
 
         Project project2 = projects.get(1);
-        assertThat(project2.fullName, is("yigit/android-architecture"));
+        assertThat(project2.name, is("Time Machine R&D"));
     }
 
     @Test
     public void getContributors() throws IOException, InterruptedException {
         enqueueResponse("contributors.json");
         List<Contributor> contributors = getValue(
-                service.getContributors("bar")).body;
+                service.getContributors(1)).body;
         assertThat(contributors.size(), is(3));
         Contributor yigit = contributors.get(0);
         assertThat(yigit.getLogin(), is("yigit"));
@@ -113,18 +112,12 @@ public class TeamworkServiceTest {
 
     @Test
     public void search() throws IOException, InterruptedException {
-        String header = "<https://api.github.com/getProjects/repositories?q=foo&page=2>; rel=\"next\","
-                + " <https://api.github.com/getProjects/repositories?q=foo&page=34>; rel=\"last\"";
-        Map<String, String> headers = new HashMap<>();
-        headers.put("link", header);
-        enqueueResponse("projects.json", headers);
+        enqueueResponse("projects.json");
         ApiResponse<GetProjectsResponse> response = getValue(
                 service.getProjects());
 
         assertThat(response, notNullValue());
         assertThat(response.body.getProjects().size(), is(30));
-        assertThat(response.links.get("next"),
-                is("https://api.github.com/getProjects/repositories?q=foo&page=2"));
         assertThat(response.getNextPage(), is(2));
     }
 

@@ -51,7 +51,7 @@ public class ProjectsNextPageTask implements Runnable {
                 List<Integer> ids = new ArrayList<>();
                 ids.addAll(current.projectIds);
                 //noinspection ConstantConditions
-                ids.addAll(apiResponse.body.getRepoIds());
+                ids.addAll(apiResponse.body.getProjectIds());
                 GetProjectsResult merged = new GetProjectsResult(ids,
                         apiResponse.getNextPage());
                 try {

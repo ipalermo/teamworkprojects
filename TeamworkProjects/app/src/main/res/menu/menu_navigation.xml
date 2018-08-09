@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group>
+        <item
+            android:id="@+id/projects_list_fragment"
+            android:title="@string/projects_list_fragment_title" />
+    </group>
+
+    <group>
+        <item
+            android:id="@+id/about"
+            android:title="@string/about_fragment_title"
+            android:icon="@android:drawable/ic_menu_info_details"/>
+        <item
+            android:id="@+id/help"
+            android:title="@string/help_menu_option"
+            android:icon="@android:drawable/ic_menu_help"/>
+    </group>
+
+</menu>

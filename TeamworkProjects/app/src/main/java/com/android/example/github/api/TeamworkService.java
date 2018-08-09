@@ -21,13 +21,13 @@ public interface TeamworkService {
     @GET("users/{id}")
     LiveData<ApiResponse<User>> getUser(@Path("id") String login);
 
-    @GET("users/{id}/repos")
-    LiveData<ApiResponse<List<Project>>> getRepos(@Path("id") String login);
+    @GET("users/{userId}/projects")
+    LiveData<ApiResponse<List<Project>>> getProjects(@Path("userId") String login);
 
     @GET("projects/{id}.json")
     LiveData<ApiResponse<Project>> getProject(@Path("id") int id);
 
-    @GET("projects/{id}.json?includePeople=true")
+    @GET("projects/{projectId}.json?includePeople=true")
     LiveData<ApiResponse<List<Contributor>>> getContributors(@Path("projectId") int projectId);
 
     @GET("projects.json")

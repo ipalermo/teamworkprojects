@@ -76,7 +76,7 @@ public class ProjectRepository {
             @NonNull
             @Override
             protected LiveData<ApiResponse<List<Project>>> createCall() {
-                return teamworkService.getRepos(owner);
+                return teamworkService.getProjects(owner);
             }
 
             @Override
@@ -164,7 +164,7 @@ public class ProjectRepository {
 
             @Override
             protected void saveCallResult(@NonNull GetProjectsResponse item) {
-                List<Integer> repoIds = item.getRepoIds();
+                List<Integer> repoIds = item.getProjectIds();
                 GetProjectsResult getProjectsResult = new GetProjectsResult(
                         repoIds, item.getNextPage());
                 db.beginTransaction();

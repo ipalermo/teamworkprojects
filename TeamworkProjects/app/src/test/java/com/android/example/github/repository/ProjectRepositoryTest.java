@@ -173,8 +173,8 @@ public class ProjectRepositoryTest {
     @Test
     public void search_fromServer() {
         List<Integer> ids = Arrays.asList(1, 2);
-        Project project1 = TestUtil.createProject(1, "company", "repo 1", "desc 1");
-        Project project2 = TestUtil.createProject(2, "company", "repo 2", "desc 2");
+        Project project1 = TestUtil.createProject(1, "repo 1", "desc 1");
+        Project project2 = TestUtil.createProject(2, "repo 2", "desc 2");
 
         Observer<Resource<List<Project>>> observer = mock(Observer.class);
         MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();

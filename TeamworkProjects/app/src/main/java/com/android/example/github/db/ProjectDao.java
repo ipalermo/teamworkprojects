@@ -70,8 +70,8 @@ public abstract class ProjectDao {
         });
     }
 
-    @Query("SELECT * FROM Project WHERE id in (:repoIds)")
-    protected abstract LiveData<List<Project>> loadById(List<Integer> repoIds);
+    @Query("SELECT * FROM Project WHERE id in (:projectIds)")
+    protected abstract LiveData<List<Project>> loadById(List<Integer> projectIds);
 
     @Query("SELECT * FROM GetProjectsResult")
     public abstract GetProjectsResult findSearchResult();
