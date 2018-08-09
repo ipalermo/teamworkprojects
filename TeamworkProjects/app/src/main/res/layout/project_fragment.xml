@@ -153,7 +153,8 @@
                     android:layout_marginLeft="16dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.status}"
-                    tools:text="10/08/2018"
+                    android:textAllCaps="true"
+                    tools:text="Active"
                     app:layout_constraintStart_toEndOf="@id/status_icon"
                     app:layout_constraintTop_toBottomOf="@id/divider" />
 
@@ -165,7 +166,7 @@
                     android:layout_marginLeft="16dp"
                     android:layout_marginTop="16dp"
                     android:text="@{project.subStatus}"
-                    tools:text="01/12/2018"
+                    tools:text="dealyed"
                     app:layout_constraintStart_toEndOf="@id/status"
                     app:layout_constraintTop_toBottomOf="@id/divider" />
 

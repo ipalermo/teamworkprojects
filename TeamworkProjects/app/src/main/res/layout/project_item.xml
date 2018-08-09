@@ -19,8 +19,7 @@
         android:layout_marginStart="@dimen/default_margin"
         android:layout_marginEnd="@dimen/default_margin"
         android:foreground="?attr/selectableItemBackground"
-        app:cardBackgroundColor="@android:color/white"
-        app:cardUseCompatPadding="true">
+        app:cardBackgroundColor="@android:color/white">
 
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
