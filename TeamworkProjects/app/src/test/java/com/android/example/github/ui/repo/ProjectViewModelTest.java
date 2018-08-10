@@ -22,7 +22,7 @@ import java.util.List;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -50,41 +50,37 @@ public class ProjectViewModelTest {
     public void testNull() {
         assertThat(projectViewModel.getProject(), notNullValue());
         assertThat(projectViewModel.getContributors(), notNullValue());
-        verify(repository, never()).loadProject(anyString());
+        verify(repository, never()).loadProject(anyInt());
     }
 
     @Test
     public void dontFetchWithoutObservers() {
-        projectViewModel.setId("a", "b");
-        verify(repository, never()).loadProject(anyString());
+        projectViewModel.setId(10);
+        verify(repository, never()).loadProject(anyInt());
     }
 
     @Test
     public void fetchWhenObserved() {
-        ArgumentCaptor<String> owner = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> name = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Integer> id = ArgumentCaptor.forClass(Integer.class);
 
-        projectViewModel.setId("a", "b");
+        projectViewModel.setId(10);
         projectViewModel.getProject().observeForever(mock(Observer.class));
         verify(repository, times(1)).loadProject(
-                name.capture());
-        assertThat(owner.getValue(), is("a"));
-        assertThat(name.getValue(), is("b"));
+                id.capture());
+        assertThat(id.getValue(), is(10));
     }
 
     @Test
     public void changeWhileObserved() {
-        ArgumentCaptor<String> owner = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> name = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<Integer> id = ArgumentCaptor.forClass(Integer.class);
         projectViewModel.getProject().observeForever(mock(Observer.class));
 
-        projectViewModel.setId("a", "b");
-        projectViewModel.setId("c", "d");
+        projectViewModel.setId(10);
+        projectViewModel.setId(15);
 
         verify(repository, times(2)).loadProject(
-                name.capture());
-        assertThat(owner.getAllValues(), is(Arrays.asList("a", "c")));
-        assertThat(name.getAllValues(), is(Arrays.asList("b", "d")));
+                id.capture());
+        assertThat(id.getAllValues(), is(Arrays.asList(10, 15)));
     }
 
     @Test
@@ -93,41 +89,41 @@ public class ProjectViewModelTest {
         projectViewModel.getContributors().observeForever(observer);
         verifyNoMoreInteractions(observer);
         verifyNoMoreInteractions(repository);
-        projectViewModel.setId("foo", "bar");
-        verify(repository).loadContributors("bar");
+        projectViewModel.setId(10);
+        verify(repository).loadContributors(10);
     }
 
     @Test
     public void resetId() {
-        Observer<ProjectViewModel.RepoId> observer = mock(Observer.class);
+        Observer<Integer> observer = mock(Observer.class);
         projectViewModel.projectId.observeForever(observer);
         verifyNoMoreInteractions(observer);
-        projectViewModel.setId("foo", "bar");
-        verify(observer).onChanged(new ProjectViewModel.RepoId("foo", "bar"));
+        projectViewModel.setId(10);
+        verify(observer).onChanged(10);
         reset(observer);
-        projectViewModel.setId("foo", "bar");
+        projectViewModel.setId(10);
         verifyNoMoreInteractions(observer);
-        projectViewModel.setId("a", "b");
-        verify(observer).onChanged(new ProjectViewModel.RepoId("a", "b"));
+        projectViewModel.setId(15);
+        verify(observer).onChanged(15);
     }
 
     @Test
     public void retry() {
         projectViewModel.retry();
         verifyNoMoreInteractions(repository);
-        projectViewModel.setId("foo", "bar");
+        projectViewModel.setId(10);
         verifyNoMoreInteractions(repository);
         Observer<Resource<Project>> observer = mock(Observer.class);
         projectViewModel.getProject().observeForever(observer);
-        verify(repository).loadProject("bar");
+        verify(repository).loadProject(10);
         reset(repository);
         projectViewModel.retry();
-        verify(repository).loadProject("bar");
+        verify(repository).loadProject(10);
     }
 
     @Test
-    public void nullRepoId() {
-        projectViewModel.setId(null, null);
+    public void nullProjectId() {
+        projectViewModel.setId(null);
         Observer<Resource<Project>> observer1 = mock(Observer.class);
         Observer<Resource<List<Contributor>>> observer2 = mock(Observer.class);
         projectViewModel.getProject().observeForever(observer1);

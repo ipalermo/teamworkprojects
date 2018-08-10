@@ -37,8 +37,8 @@ import retrofit2.Response;
 import static com.android.example.github.util.ApiUtil.successCall;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -66,14 +66,14 @@ public class ProjectRepositoryTest {
     @Test
     public void loadRepoFromNetwork() throws IOException {
         MutableLiveData<Project> dbData = new MutableLiveData<>();
-        when(dao.load("bar")).thenReturn(dbData);
+        when(dao.load(10)).thenReturn(dbData);
 
-        Project project = TestUtil.createProject("foo", "bar", "desc");
+        Project project = TestUtil.createProject(10, "bar", "desc");
         LiveData<ApiResponse<Project>> call = successCall(project);
-        when(service.getProject("bar")).thenReturn(call);
+        when(service.getProject(10)).thenReturn(call);
 
-        LiveData<Resource<Project>> data = repository.loadProject("bar");
-        verify(dao).load("bar");
+        LiveData<Resource<Project>> data = repository.loadProject(10);
+        verify(dao).load(10);
         verifyNoMoreInteractions(service);
 
         Observer observer = mock(Observer.class);
@@ -81,10 +81,10 @@ public class ProjectRepositoryTest {
         verifyNoMoreInteractions(service);
         verify(observer).onChanged(Resource.loading(null));
         MutableLiveData<Project> updatedDbData = new MutableLiveData<>();
-        when(dao.load("bar")).thenReturn(updatedDbData);
+        when(dao.load(10)).thenReturn(updatedDbData);
 
         dbData.postValue(null);
-        verify(service).getProject("bar");
+        verify(service).getProject(10);
         verify(dao).insert(project);
 
         updatedDbData.postValue(project);
@@ -94,22 +94,21 @@ public class ProjectRepositoryTest {
     @Test
     public void loadContributors() throws IOException {
         MutableLiveData<List<Contributor>> dbData = new MutableLiveData<>();
-        when(dao.loadContributors("bar")).thenReturn(dbData);
+        when(dao.loadContributors(10)).thenReturn(dbData);
 
         LiveData<Resource<List<Contributor>>> data = repository.loadContributors(
-                "bar");
-        verify(dao).loadContributors("bar");
+                10);
+        verify(dao).loadContributors(10);
 
-        verify(service, never()).getContributors(anyString());
+        verify(service, never()).getContributors(anyInt());
 
-        Project project = TestUtil.createProject("foo", "bar", "desc");
+        Project project = TestUtil.createProject(10, "bar", "desc");
         Contributor contributor = TestUtil.createContributor(project, "log", 3);
         // network does not send these
-        contributor.setRepoOwner(null);
-        contributor.setProjectId(null);
+        contributor.setProjectId(10);
         List<Contributor> contributors = Collections.singletonList(contributor);
         LiveData<ApiResponse<List<Contributor>>> call = successCall(contributors);
-        when(service.getContributors("bar"))
+        when(service.getContributors(10))
                 .thenReturn(call);
 
         Observer<Resource<List<Contributor>>> observer = mock(Observer.class);
@@ -118,18 +117,17 @@ public class ProjectRepositoryTest {
         verify(observer).onChanged(Resource.loading( null));
 
         MutableLiveData<List<Contributor>> updatedDbData = new MutableLiveData<>();
-        when(dao.loadContributors("bar")).thenReturn(updatedDbData);
+        when(dao.loadContributors(10)).thenReturn(updatedDbData);
         dbData.setValue(Collections.emptyList());
 
-        verify(service).getContributors("bar");
+        verify(service).getContributors(10);
         ArgumentCaptor<List<Contributor>> inserted = ArgumentCaptor.forClass((Class) List.class);
         verify(dao).insertContributors(inserted.capture());
 
 
         assertThat(inserted.getValue().size(), is(1));
         Contributor first = inserted.getValue().get(0);
-        assertThat(first.getProjectId(), is("bar"));
-        assertThat(first.getRepoOwner(), is("foo"));
+        assertThat(first.getProjectId(), is(10));
 
         updatedDbData.setValue(contributors);
         verify(observer).onChanged(Resource.success(contributors));
@@ -151,7 +149,7 @@ public class ProjectRepositoryTest {
         MutableLiveData<GetProjectsResult> dbSearchResult = new MutableLiveData<>();
         MutableLiveData<List<Project>> repositories = new MutableLiveData<>();
 
-        when(dao.search("foo")).thenReturn(dbSearchResult);
+        when(dao.search()).thenReturn(dbSearchResult);
 
         repository.getProjects().observeForever(observer);
 
@@ -183,12 +181,11 @@ public class ProjectRepositoryTest {
         GetProjectsResponse apiResponse = new GetProjectsResponse();
         List<Project> projectList = Arrays.asList(project1, project2);
         apiResponse.setProjects(projectList);
-        apiResponse.setTotal(2);
 
         MutableLiveData<ApiResponse<GetProjectsResponse>> callLiveData = new MutableLiveData<>();
         when(service.getProjects()).thenReturn(callLiveData);
 
-        when(dao.search("foo")).thenReturn(dbSearchResult);
+        when(dao.search()).thenReturn(dbSearchResult);
 
         repository.getProjects().observeForever(observer);
 
@@ -202,7 +199,7 @@ public class ProjectRepositoryTest {
 
         verify(service).getProjects();
         MutableLiveData<GetProjectsResult> updatedResult = new MutableLiveData<>();
-        when(dao.search("foo")).thenReturn(updatedResult);
+        when(dao.search()).thenReturn(updatedResult);
         updatedResult.postValue(new GetProjectsResult(ids, null));
 
         callLiveData.postValue(new ApiResponse<>(Response.success(apiResponse)));
@@ -214,7 +211,7 @@ public class ProjectRepositoryTest {
 
     @Test
     public void search_fromServer_error() {
-        when(dao.search("foo")).thenReturn(AbsentLiveData.create());
+        when(dao.search()).thenReturn(AbsentLiveData.create());
         MutableLiveData<ApiResponse<GetProjectsResponse>> apiResponse = new MutableLiveData<>();
         when(service.getProjects()).thenReturn(apiResponse);
 
