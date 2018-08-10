@@ -5,19 +5,19 @@
         xmlns:tools="http://schemas.android.com/tools"
         xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
-        <import type="com.android.example.github.vo.Status"/>
-        <import type="com.android.example.github.vo.Resource"/>
+        <import type="com.android.example.teamwork.vo.Status"/>
+        <import type="com.android.example.teamwork.vo.Resource"/>
         <variable
             name="project"
-            type="com.android.example.github.vo.Project"/>
+            type="com.android.example.teamwork.vo.Project"/>
         <variable
             name="repoResource"
             type="Resource"/>
         <variable
             name="contributorsStatus"
-            type="com.android.example.github.vo.Status"/>
+            type="com.android.example.teamwork.vo.Status"/>
         <variable name="retryCallback"
-                  type="com.android.example.github.ui.common.RetryCallback"/>
+                  type="com.android.example.teamwork.ui.common.RetryCallback"/>
     </data>
 
     <android.support.design.widget.CoordinatorLayout

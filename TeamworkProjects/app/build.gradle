@@ -5,13 +5,13 @@ android {
     compileSdkVersion build_versions.target_sdk
     buildToolsVersion build_versions.build_tools
     defaultConfig {
-        applicationId "com.android.example.github"
+        applicationId "com.android.example.teamwork"
         minSdkVersion build_versions.min_sdk
         targetSdkVersion build_versions.target_sdk
         vectorDrawables.useSupportLibrary = true
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "com.android.example.github.util.GithubTestRunner"
+        testInstrumentationRunner "com.android.example.teamwork.util.GithubTestRunner"
     }
     buildTypes {
         debug {

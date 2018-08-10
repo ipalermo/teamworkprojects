@@ -9,7 +9,7 @@
 
         <variable
             name="project"
-            type="com.android.example.github.vo.Project" />
+            type="com.android.example.teamwork.vo.Project" />
     </data>
 
     <android.support.v7.widget.CardView
